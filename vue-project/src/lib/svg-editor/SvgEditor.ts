@@ -141,7 +141,9 @@ export default class SvgEditor {
             if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
                 if (element.isVisible == true) {
                     let segement = []
+
                     segement.push('C')
+                    console.log("START OF A LINE: ", segement)
                     if (element instanceof GUIStraightLine) {
                         segement.push(element.previousGUIPoint?.baseBufferElement.center.x)
                         segement.push(element.previousGUIPoint?.baseBufferElement.center.y)
@@ -156,6 +158,7 @@ export default class SvgEditor {
                     }
                     segement.push(element.nextGUIPoint?.baseBufferElement.center.x)
                     segement.push(element.nextGUIPoint?.baseBufferElement.center.y)
+                    console.log("this is a line: ", segement)
                     lines.push(segement)
                     this.inVisible(element)
                     let preLine = element.previousGUIPoint?.previousGUILine
@@ -163,9 +166,12 @@ export default class SvgEditor {
                     let startPointX = element.previousGUIPoint?.baseBufferElement.center.x
                     let startPointY = element.previousGUIPoint?.baseBufferElement.center.y
                     while (preLine != null) {
+                        console.log("ELEMENT:!!!", element)
+                        console.log("PRELINE:!!!", preLine)
                         segement = []
                         segement.push('C');
-                        if (preLine instanceof GUIStraightLine || preLine instanceof GUICubicCurve) {
+                        console.log("START OF A PRE LINE: ", segement)
+                        if (preLine.isVisible == true && (preLine instanceof GUIStraightLine || preLine instanceof GUICubicCurve)) {
                             if (preLine instanceof GUIStraightLine) {
                                 segement.push(preLine.previousGUIPoint?.baseBufferElement.center.x)
                                 segement.push(preLine.previousGUIPoint?.baseBufferElement.center.y)
@@ -180,6 +186,7 @@ export default class SvgEditor {
                             }
                             segement.push(preLine.nextGUIPoint?.baseBufferElement.center.x)
                             segement.push(preLine.nextGUIPoint?.baseBufferElement.center.y)
+                            console.log("this is a pre line: ", segement)
                             lines.unshift(segement)
 
                             this.inVisible(preLine)
@@ -196,14 +203,18 @@ export default class SvgEditor {
                                 break;
                             }
                         }
+                        else break
                     }
                     if (flagLoop == 0) {
                         // 往后放到空为止
                         let nextLine = element.nextGUIPoint?.nextGUILine
                         while (nextLine != null) {
+                            console.log("ELEMENT:!!!", element)
+                            console.log("NEXTLINE:!!!", nextLine)
                             segement = []
                             segement.push('C');
-                            if (nextLine instanceof GUIStraightLine || nextLine instanceof GUICubicCurve) {
+                            console.log("START OF A NEXT LINE: ", segement)
+                            if (nextLine.isVisible == true && (nextLine instanceof GUIStraightLine || nextLine instanceof GUICubicCurve)) {
                                 if (nextLine instanceof GUIStraightLine) {
                                     segement.push(nextLine.previousGUIPoint?.baseBufferElement.center.x)
                                     segement.push(nextLine.previousGUIPoint?.baseBufferElement.center.y)
@@ -218,11 +229,13 @@ export default class SvgEditor {
                                 }
                                 segement.push(nextLine.nextGUIPoint?.baseBufferElement.center.x)
                                 segement.push(nextLine.nextGUIPoint?.baseBufferElement.center.y)
+                                console.log("this is a next line: ", segement)
                                 lines.push(segement)
 
                                 this.inVisible(nextLine)
                                 nextLine = nextLine.previousGUIPoint?.previousGUILine
                             }
+                            else break
                         }
                     }
                     let endPointX = lines[lines.length - 1][5]
@@ -362,6 +375,9 @@ export default class SvgEditor {
                 this._currentEvent.secondary.clientX, this._currentEvent.secondary.clientY, e)
             )
         }
+    }
+    private sleep(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     private changePointerStatus(target: Shape | Stage | null, e: PointerEvent): void {
@@ -916,6 +932,7 @@ export default class SvgEditor {
                                                 currentPoint.nextControlPoint.correspondingGUIControlLine.onPoint.baseBufferElement.center = currentPoint.baseBufferElement.center
                                             }
                                             targetPoint.isVisible = false
+                                            console.log("currentPoint.nextGUILine", currentPoint.nextGUILine)
                                             console.log("targetPoint", targetPoint)
                                             console.log("currentPoint", currentPoint)
                                         }
@@ -928,6 +945,7 @@ export default class SvgEditor {
 
                                         }
                                         else if (targetPoint.nextGUILine == null) {
+
                                             console.log("目标点没有前线")
                                             console.log("合并！！")
                                             currentPoint.previousGUILine = targetPoint.previousGUILine
@@ -944,6 +962,7 @@ export default class SvgEditor {
                                                 currentPoint.previousControlPoint.correspondingGUIControlLine.onPoint.baseBufferElement.center = currentPoint.baseBufferElement.center
                                             }
                                             targetPoint.isVisible = false
+                                            console.log("currentPoint.nextGUILine", currentPoint.nextGUILine)
                                             console.log("targetPoint", targetPoint)
                                             console.log("currentPoint", currentPoint)
                                         }
@@ -974,8 +993,6 @@ export default class SvgEditor {
                     this._lastEvent.secondary = null
                 }
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
-                this._ifSend = 1
-                console.log("我是ts里的ifsend", this._ifSend)
             } else if (this._isSelecting) {
                 console.log("先前处于框选行为，此为结束框选终点，计算框选矩形相关内容")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
@@ -1069,6 +1086,8 @@ export default class SvgEditor {
         const onPointerUp = (e: KonvaEventObject<PointerEvent>) => {
             console.debug("onpointer up")
             this.changePointerStatus(e.target, e.evt)
+            this._ifSend = 1
+            console.log("我是ts里的ifsend", this._ifSend)
         }
 
         const onPointerLeave = (e: PointerEvent) => {
