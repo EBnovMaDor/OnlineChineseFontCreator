@@ -18,6 +18,7 @@ export default class GUIStraightLine implements GUILine {
 
     private _previousGUIPoint: GUIOnPoint | null = null
     private _nextGUIPoint: GUIOnPoint | null = null
+    private _comment:string =""
 
     constructor(startPoint: Point, endPoint: Point, previousGUIPoint: GUIOnPoint | null = null, nextGUIPoint: GUIOnPoint | null = null) {
         this._baseBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.lineGroup)
@@ -34,7 +35,6 @@ export default class GUIStraightLine implements GUILine {
 
         this._previousGUIPoint = previousGUIPoint
         this._nextGUIPoint = nextGUIPoint
-
 
         this._virtualBufferElement.konvaElement.on("pointerdblclick", (e) => {
             console.log("pointer dbl click", this)
@@ -88,6 +88,14 @@ export default class GUIStraightLine implements GUILine {
 
     draw(): void {
         this._baseBufferElement.draw()
+    }
+
+    get comment(){
+            return this._comment
+    }
+
+    set comment(comment:string){
+        this._comment = comment
     }
 
     get isSelected() {

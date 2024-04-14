@@ -21,6 +21,7 @@ export default class GUIOnPoint implements GUIBaseElement {
 
     private _isSelected: boolean = false
     private _isVisible: boolean = true
+    private _comment: string = ""
 
     /** if a point is not a control point, then need following attributes */
     _isTangency: boolean = false
@@ -95,6 +96,14 @@ export default class GUIOnPoint implements GUIBaseElement {
 
     draw(): void {
         this._baseBufferElement.draw()
+    }
+
+    get comment() {
+        return this._comment
+    }
+
+    set comment(comment: string) {
+        this._comment = comment
     }
 
     get isSelected() {

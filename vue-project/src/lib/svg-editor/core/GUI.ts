@@ -66,6 +66,10 @@ export default class GUI implements Observer {
         this._initScrollBar()
     }
 
+    set guiElementIndex(guiElementIndex: number) {
+        this._guiElementIndex = guiElementIndex
+    }
+
     update(guiElementId: number, isSelected: boolean): void {
         console.debug("GUI Element Selected Update", guiElementId, isSelected)
         console.debug("this.guiBaseElements", this.guiBaseElements)
@@ -88,7 +92,7 @@ export default class GUI implements Observer {
         let { baseBuffer } = GlobalManager.instance
         let guiElementIdx = guiElement.guiElementId
         this._guiBaseElements.delete(guiElementIdx)
-        console.log("我在GUI里！！delete from _guiBaseElements",guiElementIdx)
+        // console.log("我在GUI里！！delete from _guiBaseElements",guiElementIdx)
         if (guiElement.baseBufferElement != null)baseBuffer.deleteBaseBufferElement(guiElement.baseBufferElement)
         if (guiElement.virtualBufferElement != null)baseBuffer.deleteBaseBufferElement(guiElement.virtualBufferElement)
     }

@@ -55,6 +55,28 @@ const GUIAttrs = {
         stroke: "grey",
         strokeWidth: 1,
         isVirtual: true
+    },
+    MarkedOnPoint: {
+        radius: 5,
+        opacity: 1,
+        fill: "Orange",
+        stroke: "red",
+        strokeWidth: 2,
+        isVirtual: false
+    },
+    MarkedOffPoint: {
+        radius: 3,
+        opacity: 1,
+        fill: "Orange",
+        stroke: "green",
+        strokeWidth: 2,
+        isVirtual: false
+    },
+    MarkedLine: {
+        opacity: 1,
+        stroke: "Orange",
+        strokeWidth: 1,
+        isVirtual: false
     }
 }
 

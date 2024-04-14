@@ -17,6 +17,7 @@ export default class GUIOffPoint implements GUIBaseElement {
 
     private _isSelected: boolean = false
     private _isVisible: boolean = true
+    private _comment: string = ""
 
     _correspondingGUIPoint: GUIOnPoint | null = null
     _correspondingGUIControlLine: GUIControlLine | null = null
@@ -45,7 +46,7 @@ export default class GUIOffPoint implements GUIBaseElement {
         // 对于offpoint而言并不知道自己对于onpoint而言是前控制点还是后控制点
         // if(this._correspondingGUIPoint)
         //     this._correspondingGUIPoint.previousControlPoint = null
-        if(this._correspondingGUIControlLine)
+        if (this._correspondingGUIControlLine)
             this._correspondingGUIControlLine.offPoint = null
     }
 
@@ -62,6 +63,14 @@ export default class GUIOffPoint implements GUIBaseElement {
 
     draw(): void {
         this._baseBufferElement.draw()
+    }
+
+    get comment() {
+        return this._comment
+    }
+
+    set comment(comment: string) {
+        this._comment = comment
     }
 
     get isSelected() {

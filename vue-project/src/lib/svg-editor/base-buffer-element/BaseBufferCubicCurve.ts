@@ -123,6 +123,7 @@ export default class BaseBufferCubicCurve implements BaseBufferElement {
         this.konvaElement.data(data)
         this.konvaElement.fill(this.config.fill!)
         this.konvaElement.opacity(this.config.opacity!)
+        this.konvaElement.stroke(this.config.stroke)
         this.konvaElement.strokeWidth(this.config.strokeWidth)
     }
 

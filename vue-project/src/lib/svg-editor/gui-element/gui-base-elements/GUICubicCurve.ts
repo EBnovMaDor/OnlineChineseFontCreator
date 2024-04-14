@@ -24,6 +24,8 @@ export default class GUICubicCurve implements GUILine {
     private _previousGUIPoint: GUIOnPoint | null = null
     private _nextGUIPoint: GUIOnPoint | null = null
 
+    private _comment: string = ""
+
     constructor(startPoint: Point, endPoint: Point, controlPoint1: Point, controlPoint2: Point,
         previousGUIPoint: GUIOnPoint | null = null,
         nextGUIPoint: GUIOnPoint | null = null
@@ -61,7 +63,7 @@ export default class GUICubicCurve implements GUILine {
             GlobalManager.instance.eventHandler.addEvent(new RefreshSEBBoxEvent(e.evt))
         })
     }
-    
+
     delete() {
         let { gui } = GlobalManager.instance
         gui.deleteGUIBaseElement(this)
@@ -91,6 +93,14 @@ export default class GUICubicCurve implements GUILine {
 
     draw(): void {
         this._baseBufferElement.draw()
+    }
+
+    get comment() {
+        return this._comment
+    }
+
+    set comment(comment: string) {
+        this._comment = comment
     }
 
     get isSelected() {

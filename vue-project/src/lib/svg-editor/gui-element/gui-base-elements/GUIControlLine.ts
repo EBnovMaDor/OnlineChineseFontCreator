@@ -29,6 +29,8 @@ export default class GUIControlLine implements GUILine {
     private _onPoint: GUIOnPoint | null = null
     private _offPoint: GUIOffPoint | null = null
 
+    private _comment: string = ""
+
     constructor(startPoint: Point, endPoint: Point, onPoint: GUIOnPoint | null = null, offPoint: GUIOffPoint | null = null) {
         this._baseBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.lineGroup)
         this._virtualBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.virtualLineGroup)
@@ -49,7 +51,7 @@ export default class GUIControlLine implements GUILine {
     delete() {
         let { gui } = GlobalManager.instance
         gui.deleteGUIBaseElement(this)
-        if(this._offPoint)
+        if (this._offPoint)
             this._offPoint.correspondingGUIControlLine = null
     }
 
@@ -73,6 +75,14 @@ export default class GUIControlLine implements GUILine {
 
     draw(): void {
         this._baseBufferElement.draw()
+    }
+
+    get comment() {
+        return this._comment
+    }
+
+    set comment(comment: string) {
+        this._comment = comment
     }
 
     get isSelected() {

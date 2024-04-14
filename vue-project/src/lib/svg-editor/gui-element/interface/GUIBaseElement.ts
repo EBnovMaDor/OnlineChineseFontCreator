@@ -6,4 +6,5 @@ import type GUIElement from "./GUIElement";
 export default interface GUIBaseElement extends GUIElement, Subject, Observer {
     isSelected: boolean
     virtualBufferElement: BaseBufferElement | null
+    comment: string
 }
