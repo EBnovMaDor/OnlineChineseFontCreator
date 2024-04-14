@@ -14,9 +14,15 @@
         <el-button type="primary" @click="addCurve"> addCurve </el-button>
         <el-button type="primary" @click="deleteLine"> deleteLine </el-button>
         <el-button type="primary" @click="deletePoint"> deletePoint</el-button>
-        <el-button type="primary" @click="send"> send </el-button>
+        <!-- <el-button type="primary" @click="send"> send </el-button> -->
+        <el-button type="primary" @click="mark"> mark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+    </div>
+    <div>
+    <div v-if="showInputBox"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput">提交</el-button><el-button @click="cancelInput">取消</el-button></div>
+    <!-- <div v-else>empty</div> -->
+    <div v-if="showCommentBox">元素编号：{{ markedId }} ; 标注：{{ comment }}<el-button @click="editComment">编辑</el-button></div>
     </div>
 </template>
 
@@ -35,6 +41,9 @@ export default defineComponent({
 
     data() {
         return {
+            showInputBox:false,
+            showCommentBox:false,
+            inputValue: "",
             fps: 60,
             viewPortX: 0,
             viewPortY: 0,
@@ -52,7 +61,9 @@ export default defineComponent({
             svgEditor: undefined as SvgEditor | undefined,
             svgpath: 'M 0 0 M 3 1 M 3 0 C 3.6667 0 4.3333 0 6 0 L 6 1 M 4 2 L 8 1 Q 10 3 7 3 Q 5 5 3 4 C 2 4 1 4 0 2 Z M 9 5 L 3 7 L 5 9 L 9 5',
             username: '',
-            ifSend: 0
+            ifSend: 0,
+            markedId: -1,
+            comment:""
         }
     },
     mounted() {
@@ -112,6 +123,31 @@ export default defineComponent({
                 msg: this.svgpath
             }))
         },
+        mark(){
+            svgEditor?.setTool('mark')
+        },
+        editComment(){
+            svgEditor!.ifMarked = true
+        },
+        submitInput(){
+            console.log(this.inputValue.length);
+            if(this.inputValue.length == 0){
+                // console.log("输入不能为空")
+                svgEditor!.unMark(this.markedId)
+                svgEditor?.markComment(this.markedId,this.inputValue)
+                return
+            }
+            svgEditor?.markComment(this.markedId,this.inputValue)
+            svgEditor!.ifSend = 1
+            // 隐藏输入框
+            this.inputValue = ""
+            svgEditor!.ifMarked = false
+            // this.showInputBox=false;
+        },
+        cancelInput(){
+            svgEditor!.unMark(this.markedId)
+            svgEditor!.ifMarked = false
+        },
         handleWsOpen(e: any) {
             console.log('FE:WebSocket:open', e)
         },
@@ -126,7 +162,7 @@ export default defineComponent({
             console.log(msg)
             console.log('FE:WebSocket:message',msg.msg)
             if(svgEditor)
-                svgEditor.acceptSVG(msg.msg)
+                svgEditor.acceptSVG(msg.svg,msg.cmt)
             // console.log('FE:WebSocket:message',e)
         },
         changeActive(e: MouseEvent) {
@@ -158,19 +194,29 @@ export default defineComponent({
                 this.baseBufferMaxX = maxX
                 this.baseBufferMaxY = maxY
                 this.currentTool = svgEditor!.currentTool
+                this.showInputBox = svgEditor?.ifMarked!
+                this.markedId = svgEditor?.markedId!
+                this.showCommentBox = svgEditor?.isMarked!
+                if(this.showCommentBox){
+                    this.comment = svgEditor!.showComment(this.markedId)!
+                }
                 this.ifSend = svgEditor?.ifSend!
                 if (this.ifSend == 1) {
-                    console.log("我是vue里的ifsend", this.ifSend)
+                    // console.log("我是vue里的ifsend", this.ifSend)
                     // console.log("svgEditor",svgEditor)
                     if (svgEditor) {
                         svgEditor.ifSend = 0
+                        let comment = svgEditor.transCmt()
+                        // console.log("我是vue里的comment",comment)
                         let segment = svgEditor.transSVG()
-                        console.log("我是vue里的segment",segment)
+                        // console.log("我是vue里的segment",segment)
                         ws.send(JSON.stringify({
                             id: new Date().getTime(),
                             user: this.username,
-                            msg: segment
+                            svg: segment,
+                            cmt:comment
                         }))
+                        // console.log("我是vue里的send")
                     }
                 }
                 this.getInfo()
