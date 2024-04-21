@@ -37,6 +37,7 @@ import BaseBufferClosedPath from './base-buffer-element/BaseBufferClosedPath';
 import GUIClosedPath from './gui-element/gui-base-elements/GUIClosedPath';
 import BaseBufferClosedPolygon from './base-buffer-element/BaseBufferClosedPolygon';
 import { el } from 'element-plus/es/locales.mjs';
+import GUIText from './gui-element/gui-base-elements/GUIText';
 
 const isFingerOrMouse = (e: PointerEvent) => e.pointerType == 'touch' || e.pointerType == 'mouse'
 const isFinger = (e: PointerEvent) => e.pointerType == 'touch'
@@ -53,10 +54,13 @@ export default class SvgEditor {
 
     private _isDragging: boolean = false;
     private _isSelecting: boolean = false;
+
     private _ifSend: number = 0;
     private _ifMarked: boolean = false;
     private _markedId: number = -1;
     private _isMarked: boolean = false;
+    private _ifMarkedCanvas: boolean = false;
+    private _markPoint: Point = new Point;
 
     private _multiSelectingRectPos: {
         x1: number,
@@ -139,9 +143,9 @@ export default class SvgEditor {
     }
 
     public transSVG(): Array<any> {
-        // this.saveSVG()
+        this.saveSVG()
         let allSegements = []
-        
+
         for (let element of this._gui!.guiBaseElements.values()) {
 
             let lines = []
@@ -267,17 +271,29 @@ export default class SvgEditor {
                     })
                 }
             }
-            
+            if(element instanceof GUIText){
+                if (element.isVisible == true){
+                    let segement = []
+
+                    segement.push('T')
+                    segement.push(element.baseBufferElement.center.x)
+                    segement.push(element.baseBufferElement.center.y)
+                    segement.push(element.baseBufferElement.text)
+                    element.isVisible =false
+                    allSegements.push(segement)
+                    this.inVisible(element)
+                }
+            }
         }
         this.saveSVG()
         return allSegements
     }
 
-    public transCmt():Array<any>{
+    public transCmt(): Array<any> {
         let allComments = []
         for (let element of this._gui!.guiBaseElements.values()) {
-            if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIControlLine){
-                if(element.comment!=""){
+            if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIControlLine) {
+                if (element.comment != "") {
                     allComments.push(element.guiElementId)
                     allComments.push(element.comment)
                 }
@@ -286,9 +302,9 @@ export default class SvgEditor {
         return allComments
     }
 
-    public acceptSVG(allSegements: Array<any>,allComments :Array<any>) {
+    public acceptSVG(allSegements: Array<any>, allComments: Array<any>) {
         for (let element of this._gui!.guiBaseElements.values()) {
-            if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint) {
+            if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIText) {
                 // console.log("delete", element)
                 element.isVisible = false
                 element.delete()
@@ -299,24 +315,28 @@ export default class SvgEditor {
         for (let i = 0; i < allSegements.length; i++) {
             this.renderOneSegment(allSegements[i])
         }
-        for(let i = 0;i<allComments.length;i++){
+        for (let i = 0; i < allComments.length; i++) {
             let element = this.gui.guiBaseElements.get(allComments[i])
             i++
             element!.comment = allComments[i]
             // console.log("commented element",element)
-            if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
-                element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
-            }
-            else if (element instanceof GUIOnPoint) {
-                element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
-            }
-            else if (element instanceof GUIOffPoint) {
-                element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
-            }
+            // if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
+            //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
+            // }
+            // else if (element instanceof GUIOnPoint) {
+            //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
+            // }
+            // else if (element instanceof GUIOffPoint) {
+            //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
+            // }
         }
     }
 
-    private inVisible(element: GUIStraightLine | GUICubicCurve) {
+    private inVisible(element: GUIStraightLine | GUICubicCurve | GUIText) {
+        if(element instanceof GUIText){
+            element.isVisible = false
+            return
+        }
         if (element.previousGUIPoint) {
             element.previousGUIPoint.isVisible = false
             if (element.previousGUIPoint.nextControlPoint) {
@@ -359,7 +379,20 @@ export default class SvgEditor {
     set isMarked(isMarked: boolean) {
         this._isMarked = isMarked
     }
+    get ifMarkedCanvas(): boolean {
+        return this._ifMarkedCanvas
+    }
 
+    set ifMarkedCanvas(ifMarkedCanvas: boolean) {
+        this._ifMarkedCanvas = ifMarkedCanvas
+    }
+
+    get markPoint(): { x: number, y: number } {
+        return {
+            x: this._markPoint.x,
+            y: this._markPoint.y
+        }
+    }
     get markedId(): number {
         return this._markedId
     }
@@ -475,14 +508,14 @@ export default class SvgEditor {
                         if (this._gui!.selectedElements.size == 0) {
                             // console.log("1、先前没有选中任何元素,新增元素")
                             target.guiElement.isSelected = true
-                            // console.log("当前选中的元素：", target.guiElement)
-                            if(target.guiElement.comment!=""){
-                                this._isMarked = true
-                                this._markedId = target.guiElement.guiElementId
-                            }
-                            else{
-                                this._isMarked = false
-                            }
+                            console.log("当前选中的元素：", target.guiElement)
+                            // if (target.guiElement.comment != "") {
+                            //     this._isMarked = true
+                            //     this._markedId = target.guiElement.guiElementId
+                            // }
+                            // else {
+                            //     this._isMarked = false
+                            // }
                         } else if (this._gui!.selectedElements.size == 1) {
                             // console.log("2、先前选中单个元素")
                             if (this._gui!.selectedElements.has(target.guiElement.guiElementId)) {
@@ -496,13 +529,13 @@ export default class SvgEditor {
                                 target.guiElement.isSelected = true
                                 // console.log("当前选中的元素：", target.guiElement)
                             }
-                            if(target.guiElement.comment!=""){
-                                this._isMarked = true
-                                this._markedId = target.guiElement.guiElementId
-                            }
-                            else{
-                                this._isMarked = false
-                            }
+                            // if (target.guiElement.comment != "") {
+                            //     this._isMarked = true
+                            //     this._markedId = target.guiElement.guiElementId
+                            // }
+                            // else {
+                            //     this._isMarked = false
+                            // }
                         } else if (this._gui!.selectedElements.size > 1) {
                             // console.log("3、先前选中多个元素")
                             if (this._gui!.selectedElements.has(target.guiElement.guiElementId)) {
@@ -517,13 +550,13 @@ export default class SvgEditor {
                                 }
                                 target.guiElement.isSelected = true
                                 // console.log("当前选中的元素：", target.guiElement)
-                                if(target.guiElement.comment!=""){
-                                    this._isMarked = true
-                                    this._markedId = target.guiElement.guiElementId
-                                }
-                                else{
-                                    this._isMarked = false
-                                }
+                                // if (target.guiElement.comment != "") {
+                                //     this._isMarked = true
+                                //     this._markedId = target.guiElement.guiElementId
+                                // }
+                                // else {
+                                //     this._isMarked = false
+                                // }
                             }
                         }
                         this._isSelecting = false
@@ -815,7 +848,7 @@ export default class SvgEditor {
                 console.log("DELETE MODE - LINE")
                 //首先判断是否选中元素了
                 this._isSelecting = false
-                this._isDragging = false
+                this._isDragging = true
                 if (isDecoratedShape(target!)) { //选中元素了
                     console.log("一、选中元素了")
                     // 取消之前所有元素的选中，只选中当前元素
@@ -844,7 +877,7 @@ export default class SvgEditor {
             }
             else if (this._currentTool == 'deletePoint') {
                 this._isSelecting = false
-                this._isDragging = false
+                this._isDragging = true
                 console.log("DELETE MODE - POINT")
                 //首先判断是否选中元素了
                 if (isDecoratedShape(target!)) { //选中元素了
@@ -938,23 +971,54 @@ export default class SvgEditor {
                         element.isSelected = false
                     }
                     target.guiElement.isSelected = true
+                    
                     // console.log("当前选中的元素：", target.guiElement)
                     this._isSelecting = false
                     this._isDragging = true
-                    
+
                     this._ifMarked = true
                     this._markedId = target.guiElement.guiElementId
-                    
-                    if (target.guiElement instanceof GUIStraightLine || target.guiElement instanceof GUICubicCurve) {
-                        target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
-                    }
-                    else if (target.guiElement instanceof GUIOnPoint) {
-                        target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
-                    }
-                    else if (target.guiElement instanceof GUIOffPoint) {
-                        target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
-                    }
+                    // if (target.guiElement instanceof GUIStraightLine || target.guiElement instanceof GUICubicCurve) {
+                    //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
+                    // }
+                    // else if (target.guiElement instanceof GUIOnPoint) {
+                    //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
+                    // }
+                    // else if (target.guiElement instanceof GUIOffPoint) {
+                    //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
+                    // }
 
+                }
+                else {
+                    // 选中画布了
+                    let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                    let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                    let targetPoint = new Point(bufferX, bufferY)
+                    this._ifMarkedCanvas = true
+                    this._markPoint = targetPoint
+                }
+            }
+            else if (this._currentTool == 'deleteMark') {
+                this._isSelecting = false
+                this._isDragging = true
+                console.log("DELETE MODE - MARK")
+                //首先判断是否选中元素了
+                if (isDecoratedShape(target!)) { //选中元素了
+                    console.log("一、选中元素了")
+                    // 取消之前所有元素的选中，只选中当前元素
+                    for (let element of this._gui!.selectedElements.values()) {
+                        element.isSelected = false
+                    }
+                    target.guiElement.isSelected = true
+                    if (this._gui!.selectedElements.size == 1) {
+                        for (let element of this._gui!.selectedElements.values()) {
+                            // 选中一个端点
+                            if (element instanceof GUIText) {
+                                element.isVisible = false
+                            }
+                        }
+                    }
+                    target.guiElement.isSelected = false
                 }
             }
             else if (this._currentTool == 'test') {
@@ -964,7 +1028,7 @@ export default class SvgEditor {
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
         } else if (eventType == 'pointermove') {
             if (this._isSelecting) {
-                // console.log("正在拖动——")
+                console.log("正在拖动——")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
                 if (bufferX <= this._multiSelectingRectPos.x1) {
@@ -985,7 +1049,7 @@ export default class SvgEditor {
             }
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
         } else if (eventType == 'pointerup' || eventType == 'pointerleave') {
-            if (this._isDragging && this._gui!.selectedElements.size > 0) {
+            if (this._isDragging) {
                 // console.log("先前处于拖拽行为，且选中元素长度>0 执行最终拖拽取整")
                 this.dragElements(e, true)
                 if (this._currentTool == 'editor') {
@@ -1136,8 +1200,9 @@ export default class SvgEditor {
                     this._currentEvent.secondary = null
                     this._lastEvent.secondary = null
                 }
-                if(this._currentTool != 'mark')
+                if (this._currentTool != 'mark') {
                     this._ifSend = 1
+                }
                 console.log("我是ts里的ifsend", this._ifSend)
                 for (let element of this._gui!.selectedElements.values()) {
                     element.isSelected = false
@@ -1301,7 +1366,9 @@ export default class SvgEditor {
     public importSVGPath(path: string) {
         try {
             const segments = normalize(abs(parse(path)))
-            console.log("current segment is :\n", segments)
+            // console.log("parse(path) is :\n", parse(path))
+            // console.log("abs(parse(path)) is :\n", abs(parse(path)))
+            // console.log("current segment is :\n", segments)
             this.svgPathSegementsTo(segments)
         } catch (err) {
             console.log("error", err)
@@ -1321,22 +1388,46 @@ export default class SvgEditor {
         else if (element instanceof GUIOffPoint) {
             element.baseBufferElement.config = Object.assign({}, GUIAttrs.OffPoint)
         }
-        element!.comment = ""
+        // element!.comment = ""
     }
-
-    public showComment(cmtMarkedId:number){
+    public Mark(svgMarkedId: number){
+        let element = this.gui!.guiBaseElements.get(svgMarkedId)
+        // console.log(element)
+        if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
+            element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
+        }
+        else if (element instanceof GUIOnPoint) {
+            element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
+        }
+        else if (element instanceof GUIOffPoint) {
+            element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
+        }
+    }
+    public showComment(cmtMarkedId: number) {
         let element = this.gui!.guiBaseElements.get(cmtMarkedId)
         return element?.comment
     }
 
-    public markComment(svgMarkedId: number,comment:string){
+    public markComment(svgMarkedId: number, comment: string) {
         let element = this.gui!.guiBaseElements.get(svgMarkedId)
         element!.comment = comment
         console.log(element)
     }
 
+    public markOnCanvas(x: number, y: number, comment: string) {
+        let currentComment = new GUIText(new Point(x, y), comment)
+        console.log(currentComment)
+    }
+
+
     private renderOneSegment(segement: any) {
         let { gui, baseBuffer } = GlobalManager.instance
+        if(segement[0]=='T'){
+            let point = new Point(segement[1],segement[2]);
+            let guiText = new GUIText(point,segement[3]);
+            console.log(guiText)
+            return
+        }
         let isClosed = segement.isClosed
         let startPoint: Point = new Point(segement.startPointX, segement.startPointY)
         let currentPoint = startPoint
@@ -1363,7 +1454,7 @@ export default class SvgEditor {
                 currentPoint = targetPoint
                 currentGUIPoint = targetGUIPoint
 
-                console.debug("construct Line", currentPoint, targetPoint)
+                // console.debug("construct Line", currentPoint, targetPoint)
             } else {
                 //三次贝塞尔曲线
                 let controlPoint1 = new Point(segments[i][1], segments[i][2])
@@ -1402,10 +1493,10 @@ export default class SvgEditor {
                 currentGUIPoint = targetGUIPoint
                 currentGUILine = guiLine
                 currentControlPoint = controlGUIPoint2
-                console.debug("construct Cubic Curve", controlPoint1, controlPoint2, targetPoint)
+                // console.debug("construct Cubic Curve", controlPoint1, controlPoint2, targetPoint)
             }
         }
-        console.log("!!!render!!!", this._gui!.guiBaseElements)
+        // console.log("!!!render!!!", this._gui!.guiBaseElements)
     }
 
     private svgPathSegementsTo(segments: Array<any>) {
@@ -1421,7 +1512,6 @@ export default class SvgEditor {
         let bufferWidth = baseBuffer.bufferWidth;
         let bufferHeight = baseBuffer.bufferHeight;
 
-        // 为什么不是/4
         let bufferMinX = baseBuffer.minX + bufferWidth / 3;
         let bufferMinY = baseBuffer.minY + bufferHeight / 3;
         let bufferMaxX = baseBuffer.maxX - bufferWidth / 3;
@@ -1501,8 +1591,8 @@ export default class SvgEditor {
         console.log("saveSVG")
         for (let element of this._gui!.guiBaseElements.values()) {
             // console.log("delete",element)
-            if (element.isVisible == false && (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint)) {
-                // console.log("delete", element)
+            if (element.isVisible == false && (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint|| element instanceof GUIText)) {
+                console.log("delete", element)
                 element.delete()
             }
         }

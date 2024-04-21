@@ -14,6 +14,7 @@ import type GUIBaseElement from "../gui-element/interface/GUIBaseElement";
 import { instanceOfGUILine } from "../util/InstanceHelper";
 import GUIOffPoint from "../gui-element/gui-base-elements/GUIOffPoint";
 import GUIOnPoint from "../gui-element/gui-base-elements/GUIOnPoint";
+import GUIText from "../gui-element/gui-base-elements/GUIText";
 
 export default class DragElementsEvent extends FontCreatorEvent {
     private _movementX: number;
@@ -53,6 +54,12 @@ export default class DragElementsEvent extends FontCreatorEvent {
                         let movementY = this._movementY;
                         baseBufferElement.move(movementX, movementY, this._isFinal)
                     }
+                }
+                else if(element instanceof GUIText){
+                    let baseBufferElement = element.baseBufferElement
+                    let movementX = this._movementX;
+                    let movementY = this._movementY;
+                    baseBufferElement.move(movementX, movementY, this._isFinal)
                 }
             }
 

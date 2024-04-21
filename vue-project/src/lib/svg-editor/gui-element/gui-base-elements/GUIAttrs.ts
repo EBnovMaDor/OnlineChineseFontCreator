@@ -32,6 +32,14 @@ const GUIAttrs = {
         strokeWidth: 2,
         isVirtual: true
     },
+    VirtualTextPoint: {
+        radius: 1,
+        opacity: 0,
+        fill: "blue",
+        stroke: "blue",
+        strokeWidth: 1,
+        isVirtual: true
+    },
     Line: {
         opacity: 1,
         stroke: "black",
@@ -55,6 +63,12 @@ const GUIAttrs = {
         stroke: "grey",
         strokeWidth: 1,
         isVirtual: true
+    },
+    Text: {
+        opacity: 1,
+        stroke: "black",
+        strokeWidth: 1,
+        isVirtual: false
     },
     MarkedOnPoint: {
         radius: 5,

@@ -8,3 +8,4 @@ declare module 'normalize-svg-path' {
    */
     export = content
 }
+

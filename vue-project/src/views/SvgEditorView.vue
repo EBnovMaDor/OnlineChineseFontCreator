@@ -16,13 +16,20 @@
         <el-button type="primary" @click="deletePoint"> deletePoint</el-button>
         <!-- <el-button type="primary" @click="send"> send </el-button> -->
         <el-button type="primary" @click="mark"> mark </el-button>
+        <el-button type="primary" @click="deleteMark"> deletemark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
     </div>
     <div>
-    <div v-if="showInputBox"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput">提交</el-button><el-button @click="cancelInput">取消</el-button></div>
+    <div v-if="showInputBox"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput">提交</el-button></div>
+    <div v-if="showInputBox2"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput2">提交</el-button></div>
     <!-- <div v-else>empty</div> -->
-    <div v-if="showCommentBox">元素编号：{{ markedId }} ; 标注：{{ comment }}<el-button @click="editComment">编辑</el-button></div>
+    <!-- <div v-if="showCommentBox">元素编号：{{ markedId }} ; 标注：{{ comment }}<el-button @click="editComment">编辑</el-button></div> -->
+    <div v-for="item in list" :key="item.gui_id"><div :class="(item.gui_id == markedId && showInputBox == true)? 'back-red' : 'back-blue'"  @mouseenter="markShow(item.gui_id)" @mouseleave="markHide(item.gui_id)">元素编号：{{ item.gui_id }} ; 标注：{{ item.gui_mark }}<el-button @click="editComment(item.gui_id)">编辑</el-button>
+    ><el-button @click="deleteComment(item.gui_id)">删除</el-button></div></div>
+</div>
+    <div>
+
     </div>
 </template>
 
@@ -42,7 +49,8 @@ export default defineComponent({
     data() {
         return {
             showInputBox:false,
-            showCommentBox:false,
+            showInputBox2:false,
+            // showCommentBox:false,
             inputValue: "",
             fps: 60,
             viewPortX: 0,
@@ -63,7 +71,8 @@ export default defineComponent({
             username: '',
             ifSend: 0,
             markedId: -1,
-            comment:""
+            comment:"1",
+            list: [] as any
         }
     },
     mounted() {
@@ -107,6 +116,9 @@ export default defineComponent({
         deletePoint() {
             svgEditor?.setTool('deletePoint')
         },
+        deleteMark() {
+            svgEditor?.setTool('deleteMark')
+        },
         mergePoint() {
             svgEditor?.setTool('mergePoint')
         },
@@ -126,8 +138,15 @@ export default defineComponent({
         mark(){
             svgEditor?.setTool('mark')
         },
-        editComment(){
+        editComment(id : number){
+            svgEditor!.markedId = id
             svgEditor!.ifMarked = true
+        },
+        deleteComment(id:number){
+            // svgEditor!.unMark(this.markedId)
+            svgEditor?.markComment(this.markedId,"")
+            svgEditor!.ifSend = 1
+            // this.markedId = 
         },
         submitInput(){
             console.log(this.inputValue.length);
@@ -137,16 +156,35 @@ export default defineComponent({
                 svgEditor?.markComment(this.markedId,this.inputValue)
                 return
             }
+            console.log(this.markedId)
             svgEditor?.markComment(this.markedId,this.inputValue)
+            // console.log("wozaisubmit",this.ifSend)
             svgEditor!.ifSend = 1
             // 隐藏输入框
             this.inputValue = ""
             svgEditor!.ifMarked = false
             // this.showInputBox=false;
         },
-        cancelInput(){
-            svgEditor!.unMark(this.markedId)
-            svgEditor!.ifMarked = false
+        submitInput2(){
+            console.log(this.inputValue.length);
+            if(this.inputValue.length == 0){
+                console.log("输入不能为空")
+                // svgEditor!.unMark(this.markedId)
+                // svgEditor?.markComment(this.markedId,this.inputValue)
+                return
+            }
+            svgEditor?.markOnCanvas(svgEditor.markPoint.x,svgEditor.markPoint.y,this.inputValue)
+            svgEditor!.ifSend = 1
+            // 隐藏输入框
+            this.inputValue = ""
+            svgEditor!.ifMarkedCanvas = false
+            // this.showInputBox=false;
+        },
+        markShow(id:number){
+            svgEditor!.Mark(id)
+        },
+        markHide(id:number){
+            svgEditor!.unMark(id)
         },
         handleWsOpen(e: any) {
             console.log('FE:WebSocket:open', e)
@@ -159,18 +197,27 @@ export default defineComponent({
         },
         handleWsMessage(e: any) {
             const msg = JSON.parse(e.data.toString());
-            console.log(msg)
-            console.log('FE:WebSocket:message',msg.msg)
+            // console.log(msg)
+            // console.log('FE:WebSocket:message',msg.msg)
+            this.list= []
+            for (let i = 0; i < msg.cmt.length; i++) {
+                console.log("111")
+            // let element = msg.cmt[i]
+            // element!.comment = msg.cmt[i]
+            var mark:any = { gui_id: msg.cmt[i], gui_mark: msg.cmt[i+1]} 
+            i++
+            this.list.push(mark)
+            }
             if(svgEditor)
                 svgEditor.acceptSVG(msg.svg,msg.cmt)
             // console.log('FE:WebSocket:message',e)
         },
         changeActive(e: MouseEvent) {
-            console.log(e);
+            // console.log(e);
         },
         removeActive(e: MouseEvent) {
-            if (e.currentTarget)
-                (e.currentTarget as HTMLElement).className = '';
+            // if (e.currentTarget)
+                // (e.currentTarget as HTMLElement).className = '';
         },
         getInfo() {
             setTimeout(() => {
@@ -195,11 +242,12 @@ export default defineComponent({
                 this.baseBufferMaxY = maxY
                 this.currentTool = svgEditor!.currentTool
                 this.showInputBox = svgEditor?.ifMarked!
+                this.showInputBox2 = svgEditor?.ifMarkedCanvas!
                 this.markedId = svgEditor?.markedId!
-                this.showCommentBox = svgEditor?.isMarked!
-                if(this.showCommentBox){
-                    this.comment = svgEditor!.showComment(this.markedId)!
-                }
+                // this.showCommentBox = svgEditor?.isMarked!
+                // if(this.showCommentBox){
+                //     this.comment = svgEditor!.showComment(this.markedId)!
+                // }
                 this.ifSend = svgEditor?.ifSend!
                 if (this.ifSend == 1) {
                     // console.log("我是vue里的ifsend", this.ifSend)
@@ -207,7 +255,7 @@ export default defineComponent({
                     if (svgEditor) {
                         svgEditor.ifSend = 0
                         let comment = svgEditor.transCmt()
-                        // console.log("我是vue里的comment",comment)
+                        console.log("我是vue里的comment",comment)
                         let segment = svgEditor.transSVG()
                         // console.log("我是vue里的segment",segment)
                         ws.send(JSON.stringify({
@@ -241,7 +289,16 @@ export default defineComponent({
 .logo.vue:hover {
     filter: drop-shadow(0 0 2em #42b883aa);
 }
-
+.back-red{		/* 红色背景 */
+	/* width: 1000px;
+	height: 100px; */
+	background-color: orange;
+}
+.back-blue{		/* 蓝色背景 */
+	/* width: 100px; */
+	/* height: 100px; */
+	background-color: white;
+}
 
 #canvas {
     border: 1px #0089a7dd solid;
