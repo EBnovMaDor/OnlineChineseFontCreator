@@ -336,8 +336,8 @@ export default class GUI implements Observer {
 
         horizontalScrollBarDiv.setAttribute("id", 'horizontal-bar')
         verticalScrollBarDiv.setAttribute("id", 'vertical-bar')
-        horizontalScrollBarDiv.setAttribute("style", "height: 20px; width: calc(100% - 80px); margin: 20px 40px; position: absolute; bottom: 0px; z-index: 1;")
-        verticalScrollBarDiv.setAttribute("style", "height: calc(100% - 80px); width: 20px; margin: 40px 20px; position: absolute; right: 0px; z-index: 1;top:0;")
+        horizontalScrollBarDiv.setAttribute("style", "height: 20px; width: calc(100% - 80px); margin: 0px 40px; position: absolute; bottom: 0px; z-index: 35;")
+        verticalScrollBarDiv.setAttribute("style", "height: calc(100% - 80px); width: 20px; margin: 40px 0px; position: absolute; right: 0px; z-index: 35;top:0;")
 
         this._divParentElement.appendChild(horizontalScrollBarDiv)
         this._divParentElement.appendChild(verticalScrollBarDiv)

@@ -1,81 +1,195 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
 }
 
+    a:hover {
+        color: #535bf2;
+    }
+
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #ffffff;
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: #ffffff;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+    font-size: 3.2em;
+    line-height: 1.1;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    cursor: pointer;
+    transition: border-color 0.25s;
 }
 
+    button:hover {
+        border-color: #646cff;
+    }
+
+    button:focus,
+    button:focus-visible {
+        outline: 4px auto -webkit-focus-ring-color;
+    }
+
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+    /* max-width: 1280px;*/
+    margin: 0 auto;
+    /* padding: 2rem;*/
+    text-align: center;
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+    :root {
+        color: #213547;
+        background-color: #ffffff;
+    }
+
+    a:hover {
+        color: #747bff;
+    }
+
+    button {
+        background-color: #f9f9f9;
+    }
+}
+
+/*--布局--*/
+
+.flex-container {
+    display: flex;
+    flex-flow: row wrap;
+    text-align: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+    .flex-container > * {
+        padding: 10px;
+    }
+/*--头部栏--*/
+.header {
+    width: 100%;
+    height: 32px;
+    background: #1a1a1a;
+    color: #F1F1F1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+}
+
+    .header .left {
+        padding-left: 22px;
+        font-size: 18px;
+    }
+
+    .header .middle {
+        display: flex;
+        align-items: center;
+        margin: auto;
+        font-size: 16px;
+    }
+
+    .header .right {
+        min-width: 16%;
+        display: flex;
+        text-align: center;
+        padding-right: 22px;
+        font-size: 16px;
+    }
+
+/*--主界面--*/
+.main {
+    flex: 1 1 0px;
+    padding:0;
+    position:relative;
+    display: flex;
+    justify-content: center;
+}
+
+/*--左侧按钮栏--*/
+.left-sidebar {
+    height: calc(100vh - 52px);
+    min-width: 250px;
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index:40;
+    transition: transform 0.3s ease; /* 平移动画效果 */
+}
+    .show {
+        transform: translateX(0);
+    }
+
+    .hide {
+        transform: translateX(-75%);
+    }
+
+    .left-sidebar .button-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .block > .el-button {
+        float: left;
+    }
+
+    .left-sidebar .layer-panel {
+        flex: 3;
+        background: #999999;
+    }
+/*--底部栏--*/
+.footer {
+    min-height: 14vh;
+    max-height: 50vh;
+    min-width: 40vw;
+    background: #999999;
+
+    position: fixed;
+    bottom: 20px;
+    z-index:30;
+    overflow: auto;
+}
+
+/*--右侧边栏--*/
+.right-sidebar {
+    height: calc(100vh - 72px);
+    min-width: 250px;
+    background: #999999;
+    color: #F1F1F1;
+    font-size: 16px;
+    overflow-y: auto;
 }
