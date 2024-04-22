@@ -50,6 +50,7 @@
 					</div>
 					<!--按钮栏-->
 					<div class="button-container">
+						<!--项目按钮-->
 						<div class="block" style="margin-top: 10vh;">
 							<el-button type="plain">
 								<svg-icon name="xiangmu" />
@@ -58,12 +59,15 @@
 
 						<div class="block">
 							<el-button-group>
+								<!--选择按钮-->
 								<el-button type="plain" @click="editor">
 									<svg-icon name="xuanze" />
 								</el-button>
+								<!--移动按钮-->
 								<el-button type="plain" @click="move">
 									<svg-icon name="move" />
 								</el-button>
+								<!--形状按钮-->
 								<el-dropdown trigger="click" placement="right">
 									<el-button type="plain" style="border-radius:0px;">
 										<svg-icon name="xingzhuang" />
@@ -76,9 +80,11 @@
 										</el-dropdown-menu>
 									</template>
 								</el-dropdown>
-								<el-button type="plain">
+								<!--文本按钮-->
+								<el-button type="plain" @click="markText">
 									<svg-icon style=" width: 22px; height: 22px;" name="wenben" />
 								</el-button>
+								<!--曲线按钮-->
 								<el-dropdown trigger="click" placement="right">
 									<el-button type="plain" style="border-radius:0px;">
 										<svg-icon name="quxian" />
@@ -92,6 +98,7 @@
 										</el-dropdown-menu>
 									</template>
 								</el-dropdown>
+								<!--测量按钮-->
 								<el-button type="plain">
 									<svg-icon style=" width: 30px; height: 30px;" name="celiang" />
 								</el-button>
@@ -100,16 +107,19 @@
 
 						<div class="block">
 							<el-button-group style=" display: flex; flex-direction: column;">
+								<!--标注按钮-->
 								<el-button type="plain">
 									<svg-icon name="wenzi" />
 								</el-button>
-								<el-button type="plain" @click="mark">
+								<!--讨论按钮-->
+								<el-button type="plain" @click="">
 									<svg-icon style=" width: 32px; height: 32px; transform: translateX(-2px);" name="taolun" />
 								</el-button>
 							</el-button-group>
 						</div>
 
 						<div class="block" style="margin-top: 10vh;">
+							<!--图层按钮-->
 							<el-button type="plain" @click="toggleLayer">
 								<svg-icon style=" width: 30px; height: 30px;" name="tuceng" />
 							</el-button>
@@ -117,12 +127,14 @@
 
 					</div>
 				</div>
+
 				<!--字体编辑画布-->
 				<div id="canvas" @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
 
 				<!--底部栏-->
 				<div class="footer">
-					Footer
+					<p>Footer</p>
+
 				</div>
 			</div>
 
@@ -131,8 +143,18 @@
 				<p>信息栏</p>
 				<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
 				<el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+
 			</aside>
 		</div>
+
+		<!--上图层，用于创建文本框与标注-->
+		<div v-if="showInputBox2" class="upperlayer">
+			<!--文本输入框 esc取消 点击外部提交-->
+			<div class="textinputbar" v-bind:style="{left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px'}">
+				<el-input v-model="inputValue" @blur="submitInput2" @keyup.esc="cancelInput2" style="width: 200px" :autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
+			</div>
+		</div>
+
 	</div>
 </template>
 
@@ -162,6 +184,7 @@
 
 				showInputBox: false,
 				showInputBox2: false,
+				mouseTextPos: {x:0,y:0},
 				// showCommentBox:false,
 				inputValue: "",
 				fps: 60,
@@ -254,6 +277,9 @@
 			mark() {
 				svgEditor?.setTool('mark')
 			},
+			markText() {
+				svgEditor?.setTool('markText')
+			},
 			editComment(id: number) {
 				svgEditor!.markedId = id
 				svgEditor!.ifMarked = true
@@ -279,6 +305,8 @@
 				// 隐藏输入框
 				this.inputValue = ""
 				svgEditor!.ifMarked = false
+				//设置回选择工具
+				svgEditor?.setTool('editor')
 				// this.showInputBox=false;
 			},
 			submitInput2() {
@@ -294,8 +322,19 @@
 				// 隐藏输入框
 				this.inputValue = ""
 				svgEditor!.ifMarkedCanvas = false
+				//设置回选择工具
+				svgEditor?.setTool('editor')
 				// this.showInputBox=false;
 			},
+			cancelInput2() {
+				console.log("cancel markText");
+				// 隐藏输入框
+				this.inputValue = ""
+				svgEditor!.ifMarkedCanvas = false
+				//设置回选择工具
+				svgEditor?.setTool('editor')
+			},
+
 			markShow(id: number) {
 				svgEditor!.Mark(id)
 			},
@@ -359,6 +398,7 @@
 					this.currentTool = svgEditor!.currentTool
 					this.showInputBox = svgEditor?.ifMarked!
 					this.showInputBox2 = svgEditor?.ifMarkedCanvas!
+					this.mouseTextPos = svgEditor?.textPoint!
 					this.markedId = svgEditor?.markedId!
 					// this.showCommentBox = svgEditor?.isMarked!
 					// if(this.showCommentBox){

@@ -96,6 +96,15 @@ button {
     .flex-container > * {
         padding: 10px;
     }
+
+.upperlayer {
+    height: 100vh;
+    width: 100vw;
+    z-index: 100;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
 /*--头部栏--*/
 .header {
     width: 100%;
@@ -136,6 +145,9 @@ button {
     display: flex;
     justify-content: center;
 }
+.textinputbar {
+    position: fixed;
+}
 
 /*--左侧按钮栏--*/
 .left-sidebar {
@@ -145,7 +157,7 @@ button {
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index:40;
+    z-index: 40;
     transition: transform 0.3s ease; /* 平移动画效果 */
 }
     .show {
