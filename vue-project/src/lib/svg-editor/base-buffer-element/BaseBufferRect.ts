@@ -53,15 +53,19 @@ export default class BaseBufferRect implements BaseBufferElement {
         let { normalX, normalY } = viewPort.bufferCoordinateToNormalCoordinate(this._leftTop.x, this._leftTop.y)
         let normalWidth = viewPort.bufferWidthToNormalWidth(this._width)
         let normalHeight = viewPort.bufferHeightToNormalHeight(this._height)
-
-        this.konvaElement.x(normalX * gui.canvasWidth)
-        this.konvaElement.y(normalY * gui.canvasHeight)
-        this.konvaElement.width(normalWidth * gui.canvasWidth)
-        this.konvaElement.height(normalHeight * gui.canvasHeight)
-        this.konvaElement.opacity(this.config.opacity!)
-        this.konvaElement.stroke(this.config.stroke)
-        this.konvaElement.fill(this.config.fill!)
-        this.konvaElement.strokeWidth(this.config.strokeWidth)
+        if (Number.isNaN(normalX) || Number.isNaN(normalY) || Number.isNaN(normalWidth) || Number.isNaN(normalHeight) || Number.isNaN(gui.canvasWidth) || Number.isNaN(gui.canvasHeight)) {
+            console.log(normalX, normalY, normalWidth, normalHeight);
+        }          
+        else {
+            this.konvaElement.x(normalX * gui.canvasWidth)
+            this.konvaElement.y(normalY * gui.canvasHeight)
+            this.konvaElement.width(normalWidth * gui.canvasWidth)
+            this.konvaElement.height(normalHeight * gui.canvasHeight)
+            this.konvaElement.opacity(this.config.opacity!)
+            this.konvaElement.stroke(this.config.stroke)
+            this.konvaElement.fill(this.config.fill!)
+            this.konvaElement.strokeWidth(this.config.strokeWidth)
+        }
     }
 
     get attributes(): { leftTop: Point, width: number, height: number } {

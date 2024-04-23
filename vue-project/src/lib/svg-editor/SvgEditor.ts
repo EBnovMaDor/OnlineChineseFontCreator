@@ -61,6 +61,7 @@ export default class SvgEditor {
     private _isMarked: boolean = false;
     private _ifMarkedCanvas: boolean = false;
     private _markPoint: Point = new Point;
+    private _textPoint: Point = new Point;
 
     private _isRect: boolean = false;
     private _isTri: boolean = false;
@@ -404,6 +405,12 @@ export default class SvgEditor {
         return {
             x: this._markPoint.x,
             y: this._markPoint.y
+        }
+    }
+    get textPoint(): { x: number, y: number } {
+        return {
+            x: this._textPoint.x,
+            y: this._textPoint.y
         }
     }
     get markedId(): number {
@@ -1018,6 +1025,9 @@ export default class SvgEditor {
 
                     this._ifMarked = true
                     this._markedId = target.guiElement.guiElementId
+
+                    let commentPos = new Point(e.clientX, e.clientY)
+                    this._textPoint = commentPos
                     // if (target.guiElement instanceof GUIStraightLine || target.guiElement instanceof GUICubicCurve) {
                     //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
                     // }
@@ -1031,12 +1041,22 @@ export default class SvgEditor {
                 }
                 else {
                     // 选中画布了
-                    let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
-                    let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
-                    let targetPoint = new Point(bufferX, bufferY)
-                    this._ifMarkedCanvas = true
-                    this._markPoint = targetPoint
+                    console.log("no element choose to mark!")
                 }
+            }
+            //添加文本
+            else if (this._currentTool == 'markText') {
+                console.log("Text")
+                if (this._ifMarkedCanvas == false) { 
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                let targetPoint = new Point(bufferX, bufferY)
+                let textPos = new Point(e.clientX, e.clientY)               
+                this._markPoint = targetPoint
+                this._textPoint = textPos
+                this._ifMarkedCanvas = true
+                }
+
             }
             else if (this._currentTool == 'deleteMark') {
                 this._isSelecting = false
