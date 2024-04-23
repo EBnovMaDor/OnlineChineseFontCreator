@@ -139,12 +139,15 @@ button {
 
 /*--主界面--*/
 .main {
-    flex: 1 1 0px;
-    padding:0;
-    position:relative;
+    padding: 0;
+    width: calc(100vw - 270px);
+    position: fixed;
+    top: 52px;
+    left: 0;
     display: flex;
     justify-content: center;
 }
+
 .textinputbar {
     position: fixed;
 }
@@ -160,48 +163,92 @@ button {
     z-index: 40;
     transition: transform 0.3s ease; /* 平移动画效果 */
 }
-    .show {
-        transform: translateX(0);
-    }
 
-    .hide {
-        transform: translateX(-75%);
-    }
+.show {
+    transform: translateX(0);
+}
 
-    .left-sidebar .button-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
+.hide {
+    transform: translateX(-75%);
+}
 
-    .block > .el-button {
-        float: left;
-    }
+.left-sidebar .button-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 
-    .left-sidebar .layer-panel {
-        flex: 3;
-        background: #999999;
-    }
+.block > .el-button {
+    float: left;
+}
+
+.left-sidebar .layer-panel {
+    flex: 3;
+    background: #999999;
+}
 /*--底部栏--*/
 .footer {
     min-height: 14vh;
     max-height: 50vh;
     min-width: 40vw;
     background: #999999;
-
     position: fixed;
     bottom: 20px;
-    z-index:30;
+    z-index: 30;
     overflow: auto;
 }
 
 /*--右侧边栏--*/
 .right-sidebar {
     height: calc(100vh - 72px);
-    min-width: 250px;
-    background: #999999;
-    color: #F1F1F1;
-    font-size: 16px;
-    overflow-y: auto;
+    width: 250px;
+    position: fixed;
+    top: 52px;
+    right: 0;
+    display: flex;
+    flex-flow: column;
+    text-align: center;
+    background: #D9D9D9;
+    color: #2C2C2C;
+    font-size: 14px;
+    z-index: 30;
 }
+
+    .right-sidebar .rsidebar-top {
+        flex: 1;
+        border-bottom: 2px solid #999999;
+        overflow-y: auto;
+    }
+
+    .right-sidebar .rsidebar-bottom {
+        flex: 0 1 88px;
+    }
+
+
+.back-edit { /* 编辑态 */
+        padding: 5px 10px;
+        margin: 0 0 5px;
+        box-sizing: border-box;
+        box-shadow: 2px 8px 4px -6px hsla(0,0%,0%,.3);
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        border: dashed 5px #41403E;
+    }
+
+         .back-edit:hover {
+            border: dashed 2px #41403E;
+        }
+
+  .back-normal { /* 常态 */
+        padding: 5px 10px;
+        margin: 0 0 5px;
+        box-sizing: border-box;
+        box-shadow: 2px 8px 4px -6px hsla(0,0%,0%,.3);
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        border: solid 5px #41403E;
+    }
+
+       .back-normal:hover {
+            border: solid 2px #41403E;
+        }
+

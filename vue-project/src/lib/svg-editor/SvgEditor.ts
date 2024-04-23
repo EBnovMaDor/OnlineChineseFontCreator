@@ -985,6 +985,9 @@ export default class SvgEditor {
 
                     this._ifMarked = true
                     this._markedId = target.guiElement.guiElementId
+
+                    let commentPos = new Point(e.clientX, e.clientY)
+                    this._textPoint = commentPos
                     // if (target.guiElement instanceof GUIStraightLine || target.guiElement instanceof GUICubicCurve) {
                     //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
                     // }

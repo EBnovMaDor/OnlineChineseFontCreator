@@ -112,7 +112,7 @@
 									<svg-icon name="wenzi" />
 								</el-button>
 								<!--讨论按钮-->
-								<el-button type="plain" @click="">
+								<el-button type="plain" @click="mark">
 									<svg-icon style=" width: 32px; height: 32px; transform: translateX(-2px);" name="taolun" />
 								</el-button>
 							</el-button-group>
@@ -140,18 +140,49 @@
 
 			<!--右侧边栏-->
 			<aside class="right-sidebar">
-				<p>信息栏</p>
-				<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
-				<el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+				<div class="rsidebar-top">
+					<div style="margin: 0 0 20px; text-align: left; font-size: 16px;">
+						<b>讨论</b>
+					</div>
+					<div v-for="item in list" :key="item.gui_id">
+						<div :class="(item.gui_id == markedId && showInputBox == true)? 'back-edit' : 'back-normal'" @mouseenter="markShow(item.gui_id)" @mouseleave="markHide(item.gui_id)">
+								<div>
+									元素编号：{{ item.gui_id }}<br />
+									标注：{{ item.gui_mark }}
+								</div>
+								<div style="margin-top:5px;">
+									<el-button type="primary" size="small" circle @click="editComment(item.gui_id)">
+										<el-icon class="el-icon--small">
+											<edit />
+										</el-icon>
+									</el-button>
+									<el-button type="danger" size="small" circle @click="deleteComment(item.gui_id)" >
+									<el-icon class="el-icon--small">
+										<delete />
+									</el-icon>
+									</el-button>
+								</div>
+						</div>
+					</div>
+				</div>
+				<div class="rsidebar-bottom">
+					<div style="margin: 10px 0 30px; text-align: left; font-size: 16px;"><b>按钮</b></div>
+					<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
+					<el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+				</div>
 
 			</aside>
 		</div>
 
 		<!--上图层，用于创建文本框与标注-->
-		<div v-if="showInputBox2" class="upperlayer">
+		<div v-show="showInputBox2 || showInputBox" class="upperlayer">
 			<!--文本输入框 esc取消 点击外部提交-->
-			<div class="textinputbar" v-bind:style="{left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px'}">
+			<div class="textinputbar" v-if="showInputBox2" v-bind:style="{left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px'}">
 				<el-input v-model="inputValue" @blur="submitInput2" @keyup.esc="cancelInput2" style="width: 200px" :autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
+			</div>
+			<!--讨论输入框 esc取消 点击外部提交-->
+			<div class="textinputbar" v-if="showInputBox" v-bind:style="{left: mousecommentPos.left + 'px', top: mousecommentPos.top + 'px'}">
+				<el-input v-model="inputValue" @blur="submitInput" @keyup.esc="cancelInput" style="width: 200px" :autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
 			</div>
 		</div>
 
@@ -159,13 +190,13 @@
 </template>
 
 <script lang="ts">
-	import { ArrowDown } from '@element-plus/icons-vue'
+	import { ArrowDown,Delete,Edit, } from '@element-plus/icons-vue'
 	import { defineComponent, ref, onMounted } from 'vue'
 	import { ElScrollbar } from 'element-plus'
 	import SvgEditor from '../lib/svg-editor/SvgEditor'
 	import { useRouter } from 'vue-router'
 	import router from '@/router'
-	const scrollbarRef = ref < InstanceType < typeof ElScrollbar >> ()
+	const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 	let svgEditor: SvgEditor | undefined
 
 	const ws = new WebSocket('ws://localhost:8000');
@@ -174,7 +205,8 @@
 
 		components: {
 			ArrowDown,
-
+			Delete,
+			Edit,
 		},
 
 		data() {
@@ -184,7 +216,8 @@
 
 				showInputBox: false,
 				showInputBox2: false,
-				mouseTextPos: {x:0,y:0},
+				mouseTextPos: { x: 0, y: 0 },
+				mousecommentPos: { left: 0, top: 0 },
 				// showCommentBox:false,
 				inputValue: "",
 				fps: 60,
@@ -207,7 +240,8 @@
 				ifSend: 0,
 				markedId: -1,
 				comment: "1",
-				list: [] as any
+				list: [] as any,
+				marklist: [] as any,
 
 			}
 		},
@@ -223,6 +257,7 @@
 			ws.addEventListener('close', this.handleWsClose.bind(this), false)
 			ws.addEventListener('error', this.handleWsError.bind(this), false)
 			ws.addEventListener('message', this.handleWsMessage.bind(this), false)
+
 		},
 		methods: {
 			toggleLayer() {
@@ -280,16 +315,29 @@
 			markText() {
 				svgEditor?.setTool('markText')
 			},
+			calCommentPos() {
+				const foundmark = this.marklist.find((mark: any) => mark.id === this.markedId)
+				if (foundmark) {
+					this.mousecommentPos.left = foundmark.pos.x
+					this.mousecommentPos.top = foundmark.pos.y
+				}
+				else {
+					this.mousecommentPos.left = this.mouseTextPos.x
+					this.mousecommentPos.top = this.mouseTextPos.y
+				}
+			},
 			editComment(id: number) {
 				svgEditor!.markedId = id
 				svgEditor!.ifMarked = true
 			},
 			deleteComment(id: number) {
 				// svgEditor!.unMark(this.markedId)
-				svgEditor?.markComment(this.markedId, "")
+				svgEditor?.markComment(id, "")
 				svgEditor!.ifSend = 1
 				// this.markedId =
+				this.marklist = this.marklist.filter((v: any) => v.id !== id)
 			},
+			//讨论
 			submitInput() {
 				console.log(this.inputValue.length);
 				if (this.inputValue.length == 0) {
@@ -300,6 +348,10 @@
 				}
 				console.log(this.markedId)
 				svgEditor?.markComment(this.markedId, this.inputValue)
+
+				//记录提交时讨论位置
+				var markpos: any = { id: this.markedId, pos: this.mouseTextPos }
+				this.marklist.push(markpos)
 				// console.log("wozaisubmit",this.ifSend)
 				svgEditor!.ifSend = 1
 				// 隐藏输入框
@@ -309,6 +361,15 @@
 				svgEditor?.setTool('editor')
 				// this.showInputBox=false;
 			},
+			cancelInput() {
+				console.log("cancel markComment");
+				// 隐藏输入框
+				this.inputValue = ""
+				svgEditor!.ifMarked = false
+				//设置回选择工具
+				svgEditor?.setTool('editor')
+			},
+			//文本
 			submitInput2() {
 				console.log(this.inputValue.length);
 				if (this.inputValue.length == 0) {
@@ -423,6 +484,10 @@
 							// console.log("我是vue里的send")
 						}
 					}
+					//显示评论输入框时计算位置
+					if (this.showInputBox) {
+						this.calCommentPos();
+					}
 					this.getInfo()
 				}, 50)
 			},
@@ -475,11 +540,15 @@
 		font-size: 20px;
 	}
 
-	#canvas {
-		position: absolute;
-		width: 100%;
-		height: calc(100vh - 52px);
-		touch-action: none;
-		user-select: none;
+	.el-icon--small {
+		font-size: 14px;
 	}
+
+	#canvas {
+			position: absolute;
+			width: 100%;
+			height: calc(100vh - 52px);
+			touch-action: none;
+			user-select: none;
+		}
 </style>
