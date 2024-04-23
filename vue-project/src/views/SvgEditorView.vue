@@ -14,7 +14,9 @@
         <el-button type="primary" @click="addCurve"> addCurve </el-button>
         <el-button type="primary" @click="deleteLine"> deleteLine </el-button>
         <el-button type="primary" @click="deletePoint"> deletePoint</el-button>
-        <!-- <el-button type="primary" @click="send"> send </el-button> -->
+        <el-button type="primary" @click="addRectangle"> addRectangle </el-button>
+        <el-button type="primary" @click="addCircle"> addCircle </el-button>
+        <el-button type="primary" @click="addTriangle"> addTriangle </el-button>
         <el-button type="primary" @click="mark"> mark </el-button>
         <el-button type="primary" @click="deleteMark"> deletemark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
@@ -121,6 +123,15 @@ export default defineComponent({
         },
         mergePoint() {
             svgEditor?.setTool('mergePoint')
+        },
+        addRectangle() {
+            svgEditor?.setTool('addRectangle')
+        },
+        addCircle() {
+            svgEditor?.setTool('addCircle')
+        },
+        addTriangle() {
+            svgEditor?.setTool('addTriangle')
         },
         send() {
             const svgPath = this.svgpath;

@@ -5,6 +5,10 @@ import Renderer from "./Renderer";
 import type GUIElement from "../gui-element/interface/GUIElement";
 import GUIDecoratedRect from "../gui-element/gui-decorated-elements/GUIDecoratedRect";
 import BaseBufferRect from "../base-buffer-element/BaseBufferRect";
+import GUIDecoratedTri from "../gui-element/gui-decorated-elements/GUIDecoratedTri";
+import BaseBufferTri from "../base-buffer-element/BaseBufferTri";
+import GUIDecoratedCircle from "../gui-element/gui-decorated-elements/GUIDecoratedCircle";
+import BaseBufferCircle from "../base-buffer-element/BaseBufferCircle";
 import Point from "../util/Point";
 import type GUIBaseElement from "../gui-element/interface/GUIBaseElement";
 import type GUIDecoratedElement from "../gui-element/interface/GUIDecoratedElement";
@@ -32,6 +36,8 @@ export default class GUI implements Observer {
     private _dualVRangeBar: DualVRangeBar | null = null;
 
     private _multiSelectingRect: GUIDecoratedRect | null = null;
+    private _multiSelectingTri: GUIDecoratedTri | null = null;
+    private _multiSelectingCircle: GUIDecoratedCircle | null = null;
     private _selectedElementsRect: GUIDecoratedRect | null = null;
 
     private _guiPreviewElements: Map<string | number, GUIElement> = new Map<string | number, GUIElement>();
@@ -225,6 +231,14 @@ export default class GUI implements Observer {
         return this._multiSelectingRect;
     }
 
+    get multiSelectingTri(): GUIDecoratedTri | null {
+        return this._multiSelectingTri;
+    }
+
+    get multiSelectingCircle(): GUIDecoratedCircle | null {
+        return this._multiSelectingCircle;
+    }
+
     get selectedElementsRect(): GUIDecoratedRect | null {
         return this._selectedElementsRect;
     }
@@ -368,8 +382,12 @@ export default class GUI implements Observer {
 
     public initDecoratedRect() {
         this._multiSelectingRect = new GUIDecoratedRect(new BaseBufferRect(new Point(0, 0), 0, 0))
+        this._multiSelectingTri = new GUIDecoratedTri(new BaseBufferTri(new Point(0, 0), 0))
+        this._multiSelectingCircle = new GUIDecoratedCircle(new BaseBufferCircle(new Point(0, 0), 0))
         this._selectedElementsRect = new GUIDecoratedRect(new BaseBufferRect(new Point(0, 0), 0, 0))
         this.addGUIDecoratedElement(this._multiSelectingRect)
+        this.addGUIDecoratedElement(this._multiSelectingTri)
+        this.addGUIDecoratedElement(this._multiSelectingCircle)
         this.addGUIDecoratedElement(this._selectedElementsRect)
     }
 

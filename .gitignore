@@ -6,3 +6,4 @@
 .vs/OnlineChineseFontCreator/config/applicationhost.config
 *.vsidx
 /.vs
+node_modules

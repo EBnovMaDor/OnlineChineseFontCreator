@@ -62,6 +62,10 @@ export default class SvgEditor {
     private _ifMarkedCanvas: boolean = false;
     private _markPoint: Point = new Point;
 
+    private _isRect: boolean = false;
+    private _isTri: boolean = false;
+    private _isCir: boolean = false;
+
     private _multiSelectingRectPos: {
         x1: number,
         y1: number,
@@ -72,6 +76,14 @@ export default class SvgEditor {
             y1: 0,
             x2: 0,
             y2: 0
+        }
+
+    private _circlePos: {
+        x1: number,
+        y1: number
+    } = {
+            x1: 0,
+            y1: 0
         }
 
     /** drawing */
@@ -133,6 +145,7 @@ export default class SvgEditor {
         let { gui, baseBuffer, viewPort } = GlobalManager.instance
         console.log(svgPath)
         this.importSVGPath(svgPath)
+        this.ifSend = 1
     }
 
     public exportSVG() {
@@ -143,7 +156,7 @@ export default class SvgEditor {
     }
 
     public transSVG(): Array<any> {
-        this.saveSVG()
+        // if (this._currentTool != 'editor') { this.saveSVG() }
         let allSegements = []
 
         for (let element of this._gui!.guiBaseElements.values()) {
@@ -271,15 +284,15 @@ export default class SvgEditor {
                     })
                 }
             }
-            if(element instanceof GUIText){
-                if (element.isVisible == true){
+            if (element instanceof GUIText) {
+                if (element.isVisible == true) {
                     let segement = []
 
                     segement.push('T')
                     segement.push(element.baseBufferElement.center.x)
                     segement.push(element.baseBufferElement.center.y)
                     segement.push(element.baseBufferElement.text)
-                    element.isVisible =false
+                    element.isVisible = false
                     allSegements.push(segement)
                     this.inVisible(element)
                 }
@@ -333,7 +346,7 @@ export default class SvgEditor {
     }
 
     private inVisible(element: GUIStraightLine | GUICubicCurve | GUIText) {
-        if(element instanceof GUIText){
+        if (element instanceof GUIText) {
             element.isVisible = false
             return
         }
@@ -500,7 +513,7 @@ export default class SvgEditor {
             if (this._currentTool == 'editor') {
                 console.log("EDITOR MODE")
                 if (!e.ctrlKey) {
-                    console.log("NO CTRL MODE")
+                    // console.log("NO CTRL MODE")
                     //首先判断是否选中元素了
                     if (isDecoratedShape(target!)) { //选中元素了
                         // console.log("一、选中元素了")
@@ -508,7 +521,7 @@ export default class SvgEditor {
                         if (this._gui!.selectedElements.size == 0) {
                             // console.log("1、先前没有选中任何元素,新增元素")
                             target.guiElement.isSelected = true
-                            console.log("当前选中的元素：", target.guiElement)
+                            // console.log("当前选中的元素：", target.guiElement)
                             // if (target.guiElement.comment != "") {
                             //     this._isMarked = true
                             //     this._markedId = target.guiElement.guiElementId
@@ -561,6 +574,9 @@ export default class SvgEditor {
                         }
                         this._isSelecting = false
                         this._isDragging = true
+                        this._isRect = false
+                        this._isCir = false
+                        this._isTri = false
 
                     } else {
                         //选中画布了
@@ -573,6 +589,9 @@ export default class SvgEditor {
                         }
                         this._isDragging = false
                         this._isSelecting = true
+                        this._isRect = false
+                        this._isCir = false
+                        this._isTri = false
 
                         this._multiSelectingRectPos.x1 = bufferX
                         this._multiSelectingRectPos.y1 = bufferY
@@ -608,6 +627,9 @@ export default class SvgEditor {
                         }
                         this._isSelecting = false
                         this._isDragging = true
+                        this._isRect = false
+                        this._isCir = false
+                        this._isTri = false
 
                         this._gui!.selectedElementsRect!.baseBufferElement.width = 0
                         this._gui!.selectedElementsRect!.baseBufferElement.height = 0
@@ -618,12 +640,15 @@ export default class SvgEditor {
 
                         this._isDragging = false
                         this._isSelecting = true
+                        this._isRect = false
+                        this._isCir = false
+                        this._isTri = false
 
                         this._multiSelectingRectPos.x1 = bufferX
                         this._multiSelectingRectPos.y1 = bufferY
                     }
                 }
-                console.log("this._selectedElement", this._gui!.selectedElements)
+                // console.log("this._selectedElement", this._gui!.selectedElements)
             }
             else if (this._currentTool == 'addStraightLine') {
                 console.log("ADD MODE --LINE")
@@ -651,6 +676,9 @@ export default class SvgEditor {
                 }
                 this._isSelecting = false
                 this._isDragging = true
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
 
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -658,7 +686,7 @@ export default class SvgEditor {
                 let targetGUIPoint = new GUIOnPoint(targetPoint)
 
                 if (flagPoint == 1) {
-                    console.log("选中了只有一根线的端点")
+                    // console.log("选中了只有一根线的端点")
                     for (let currentGUIPoint of this._gui!.selectedElements.values()) {
                         if (currentGUIPoint instanceof GUIOnPoint) {
                             let currentPoint = currentGUIPoint.baseBufferElement.attributes["center"]
@@ -678,20 +706,20 @@ export default class SvgEditor {
                                 guiLine.previousGUIPoint = currentGUIPoint
                                 guiLine.nextGUIPoint = targetGUIPoint
                             }
-                            console.debug("construct Line", currentPoint, targetPoint)
+                            // console.debug("construct Line", currentPoint, targetPoint)
                             // 取消原处点的选中
                             this._gui!.selectedElements.get(currentGUIPoint.guiElementId)!.isSelected = false
                         }
                     }
                 }
                 else {
-                    console.log("选中了直线/曲线/有前后线的端点/曲线控制点/画布")
+                    // console.log("选中了直线/曲线/有前后线的端点/曲线控制点/画布")
                     for (let element of this._gui!.selectedElements.values()) {
                         element.isSelected = false
                     }
                     let currentPoint = new Point(targetPoint.x, targetPoint.y)
                     let currentGUIPoint = new GUIOnPoint(currentPoint)
-                    console.log("将当前直线加入队列中")
+                    // console.log("将当前直线加入队列中")
                     let guiLine = new GUIStraightLine(currentPoint, targetPoint)
                     // 确定当前直线的前后点
                     targetGUIPoint.previousGUILine = guiLine
@@ -700,7 +728,7 @@ export default class SvgEditor {
                     currentGUIPoint.previousGUILine = null
                     guiLine.previousGUIPoint = currentGUIPoint
                     guiLine.nextGUIPoint = targetGUIPoint
-                    console.debug("construct Line", currentPoint, targetPoint)
+                    // console.debug("construct Line", currentPoint, targetPoint)
                 }
                 // 选中新建点开始拖拽
                 this._gui!.selectedElements.set(targetGUIPoint.guiElementId, targetGUIPoint)
@@ -732,6 +760,9 @@ export default class SvgEditor {
                 }
                 this._isSelecting = false
                 this._isDragging = true
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
 
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -742,7 +773,7 @@ export default class SvgEditor {
 
 
                 if (flagPoint == 1) {
-                    console.log("选中了只有一根线的端点")
+                    // console.log("选中了只有一根线的端点")
                     for (let currentGUIPoint of this._gui!.selectedElements.values()) {
                         if (currentGUIPoint instanceof GUIOnPoint) {
                             let currentPoint = currentGUIPoint.baseBufferElement.attributes["center"]
@@ -792,14 +823,14 @@ export default class SvgEditor {
                                 guiLine.previousGUIPoint = currentGUIPoint
                                 guiLine.nextGUIPoint = targetGUIPoint
                             }
-                            console.debug("construct Line", currentPoint, targetPoint)
+                            // console.debug("construct Line", currentPoint, targetPoint)
                             // 取消原处点的选中
                             this._gui!.selectedElements.get(currentGUIPoint.guiElementId)!.isSelected = false
                         }
                     }
                 }
                 else {
-                    console.log("选中了直线/曲线/有前后线的端点/曲线控制点/画布")
+                    // console.log("选中了直线/曲线/有前后线的端点/曲线控制点/画布")
                     for (let element of this._gui!.selectedElements.values()) {
                         element.isSelected = false
                     }
@@ -812,7 +843,7 @@ export default class SvgEditor {
                     let controlGUIPoint2 = new GUIOffPoint(controlPoint2)
                     let controlGUILine1 = new GUIControlLine(controlPoint1, currentPoint, currentGUIPoint, controlGUIPoint1)
                     let controlGUILine2 = new GUIControlLine(controlPoint2, targetPoint, targetGUIPoint, controlGUIPoint2)
-                    console.log("将当前直线加入队列中")
+                    // console.log("将当前直线加入队列中")
                     let guiLine = new GUICubicCurve(currentPoint, targetPoint, controlPoint1, controlPoint2)
                     // 确定当前直线的前后点
                     controlGUIPoint1.correspondingGUIPoint = currentGUIPoint
@@ -838,7 +869,7 @@ export default class SvgEditor {
                     guiLine.previousGUIPoint = currentGUIPoint
                     guiLine.nextGUIPoint = targetGUIPoint
 
-                    console.debug("construct Line", currentPoint, targetPoint, controlGUIPoint1, controlGUIPoint2)
+                    // console.debug("construct Line", currentPoint, targetPoint, controlGUIPoint1, controlGUIPoint2)
                 }
                 // 选中新建点开始拖拽
                 this._gui!.selectedElements.set(targetGUIPoint.guiElementId, targetGUIPoint)
@@ -849,8 +880,11 @@ export default class SvgEditor {
                 //首先判断是否选中元素了
                 this._isSelecting = false
                 this._isDragging = true
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
                 if (isDecoratedShape(target!)) { //选中元素了
-                    console.log("一、选中元素了")
+                    // console.log("一、选中元素了")
                     // 取消之前所有元素的选中，只选中当前元素
                     for (let element of this._gui!.selectedElements.values()) {
                         element.isSelected = false
@@ -878,10 +912,13 @@ export default class SvgEditor {
             else if (this._currentTool == 'deletePoint') {
                 this._isSelecting = false
                 this._isDragging = true
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
                 console.log("DELETE MODE - POINT")
                 //首先判断是否选中元素了
                 if (isDecoratedShape(target!)) { //选中元素了
-                    console.log("一、选中元素了")
+                    // console.log("一、选中元素了")
                     // 取消之前所有元素的选中，只选中当前元素
                     for (let element of this._gui!.selectedElements.values()) {
                         element.isSelected = false
@@ -971,10 +1008,13 @@ export default class SvgEditor {
                         element.isSelected = false
                     }
                     target.guiElement.isSelected = true
-                    
+
                     // console.log("当前选中的元素：", target.guiElement)
                     this._isSelecting = false
                     this._isDragging = true
+                    this._isRect = false
+                    this._isCir = false
+                    this._isTri = false
 
                     this._ifMarked = true
                     this._markedId = target.guiElement.guiElementId
@@ -1001,10 +1041,13 @@ export default class SvgEditor {
             else if (this._currentTool == 'deleteMark') {
                 this._isSelecting = false
                 this._isDragging = true
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
                 console.log("DELETE MODE - MARK")
                 //首先判断是否选中元素了
                 if (isDecoratedShape(target!)) { //选中元素了
-                    console.log("一、选中元素了")
+                    // console.log("一、选中元素了")
                     // 取消之前所有元素的选中，只选中当前元素
                     for (let element of this._gui!.selectedElements.values()) {
                         element.isSelected = false
@@ -1021,14 +1064,66 @@ export default class SvgEditor {
                     target.guiElement.isSelected = false
                 }
             }
+            else if (this._currentTool == 'addRectangle') {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
+                this._isDragging = false
+                this._isSelecting = false
+                this._isRect = true
+                this._isCir = false
+                this._isTri = false
+
+                this._multiSelectingRectPos.x1 = bufferX
+                this._multiSelectingRectPos.y1 = bufferY
+            }
+            else if (this._currentTool == 'addCircle') {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
+                this._isDragging = false
+                this._isSelecting = false
+                this._isRect = false
+                this._isCir = true
+                this._isTri = false
+
+                this._circlePos.x1 = bufferX
+                this._circlePos.y1 = bufferY
+                this._gui!.multiSelectingCircle!.baseBufferElement.center.x = this._circlePos.x1
+                this._gui!.multiSelectingCircle!.baseBufferElement.center.y = this._circlePos.y1
+            }
+            else if (this._currentTool == 'addTriangle') {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
+                this._isDragging = false
+                this._isSelecting = false
+                this._isRect = false
+                this._isCir = false
+                this._isTri = true
+
+                this._circlePos.x1 = bufferX
+                this._circlePos.y1 = bufferY
+                this._gui!.multiSelectingTri!.baseBufferElement.center.x = this._circlePos.x1
+                this._gui!.multiSelectingTri!.baseBufferElement.center.y = this._circlePos.y1
+            }
             else if (this._currentTool == 'test') {
                 console.log("TEST")
             }
 
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
         } else if (eventType == 'pointermove') {
-            if (this._isSelecting) {
-                console.log("正在拖动——")
+            if (this._isSelecting || this._isRect) {
+                // console.log("正在拖动——")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
                 if (bufferX <= this._multiSelectingRectPos.x1) {
@@ -1047,8 +1142,25 @@ export default class SvgEditor {
                     this._gui!.multiSelectingRect!.baseBufferElement.height = bufferY - this._multiSelectingRectPos.y1
                 }
             }
+            else if (this._isCir) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                this._gui!.multiSelectingCircle!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2)) * 2
+            }
+            else if (this._isTri) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                this._gui!.multiSelectingTri!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2))
+            }
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
         } else if (eventType == 'pointerup' || eventType == 'pointerleave') {
+            // if (this._currentTool == 'deletemark') {
+            //     this._ifSend = 1
+            //     // console.log("我是ts里的ifsend", this._ifSend)
+            //     for (let element of this._gui!.selectedElements.values()) {
+            //         element.isSelected = false
+            //     }
+            // }
             if (this._isDragging) {
                 // console.log("先前处于拖拽行为，且选中元素长度>0 执行最终拖拽取整")
                 this.dragElements(e, true)
@@ -1188,29 +1300,33 @@ export default class SvgEditor {
 
                 this._isDragging = false
                 this._isSelecting = false
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
 
 
-                if (isPrimary(e)) {
-                    this._isPointerDown.primary = false
-                    this._currentEvent.primary = null
-                    this._lastEvent.primary = null
-                }
-                else {
-                    this._isPointerDown.secondary = false
-                    this._currentEvent.secondary = null
-                    this._lastEvent.secondary = null
-                }
-                if (this._currentTool != 'mark') {
+                // if (isPrimary(e)) {
+                //     this._isPointerDown.primary = false
+                //     this._currentEvent.primary = null
+                //     this._lastEvent.primary = null
+                // }
+                // else {
+                //     this._isPointerDown.secondary = false
+                //     this._currentEvent.secondary = null
+                //     this._lastEvent.secondary = null
+                // }
+                if (this._currentTool != 'mark' && (!e.ctrlKey)) {
                     this._ifSend = 1
+                    // console.log("我是ts里的ifsend", this._ifSend)
+
                 }
-                console.log("我是ts里的ifsend", this._ifSend)
                 for (let element of this._gui!.selectedElements.values()) {
                     element.isSelected = false
                 }
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
 
             } else if (this._isSelecting) {
-                console.log("先前处于框选行为，此为结束框选终点，计算框选矩形相关内容")
+                // console.log("先前处于框选行为，此为结束框选终点，计算框选矩形相关内容")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
 
@@ -1236,7 +1352,7 @@ export default class SvgEditor {
                 let maxBufferY = Math.max(this._multiSelectingRectPos.y1, bufferY)
 
                 if (!e.ctrlKey) {
-                    console.log("框选行为结束，非CTRL MODE判定，全部重新框选")
+                    // console.log("框选行为结束，非CTRL MODE判定，全部重新框选")
                     for (let element of this.gui!.guiBaseElements.values()) {
                         if (!instanceOfGUILine(element)) {
                             let bbox = element.baseBufferElement.boudingBox
@@ -1246,7 +1362,7 @@ export default class SvgEditor {
                         }
                     }
                 } else {
-                    console.log("框选行为结束，CTRL MODE判定，所有被选中元素得到相反的选择状态")
+                    // console.log("框选行为结束，CTRL MODE判定，所有被选中元素得到相反的选择状态")
                     for (let element of this.gui!.guiBaseElements.values()) {
                         if (!instanceOfGUILine(element)) {
                             let bbox = element.baseBufferElement.boudingBox
@@ -1264,20 +1380,261 @@ export default class SvgEditor {
                 this._gui!.multiSelectingRect!.baseBufferElement.height = 0
                 this._isDragging = false
                 this._isSelecting = false
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
 
-                if (isPrimary(e)) {
-                    this._isPointerDown.primary = false
-                    this._currentEvent.primary = null
-                    this._lastEvent.primary = null
-                }
-                else {
-                    this._isPointerDown.secondary = false
-                    this._currentEvent.secondary = null
-                    this._lastEvent.secondary = null
-                }
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
             }
+            else if (this._isRect) {
+                // console.log("先前处于框选行为，此为结束框选终点，计算框选矩形相关内容")
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                this._multiSelectingRectPos.x2 = bufferX
+                this._multiSelectingRectPos.y2 = bufferY
+
+                let point1 = new Point(this._multiSelectingRectPos.x1, this._multiSelectingRectPos.y1)
+                let point2 = new Point(this._multiSelectingRectPos.x1, this._multiSelectingRectPos.y2)
+                let point3 = new Point(this._multiSelectingRectPos.x2, this._multiSelectingRectPos.y2)
+                let point4 = new Point(this._multiSelectingRectPos.x2, this._multiSelectingRectPos.y1)
+
+                let guiPoint1 = new GUIOnPoint(point1)
+                let guiPoint2 = new GUIOnPoint(point2)
+                let guiPoint3 = new GUIOnPoint(point3)
+                let guiPoint4 = new GUIOnPoint(point4)
+
+                let guiLine1 = new GUIStraightLine(point1, point2)
+                guiPoint2.previousGUILine = guiLine1
+                guiPoint1.nextGUILine = guiLine1
+                guiLine1.previousGUIPoint = guiPoint1
+                guiLine1.nextGUIPoint = guiPoint2
+
+                let guiLine2 = new GUIStraightLine(point2, point3)
+                guiPoint3.previousGUILine = guiLine2
+                guiPoint2.nextGUILine = guiLine2
+                guiLine2.previousGUIPoint = guiPoint2
+                guiLine2.nextGUIPoint = guiPoint3
+
+                let guiLine3 = new GUIStraightLine(point3, point4)
+                guiPoint4.previousGUILine = guiLine3
+                guiPoint3.nextGUILine = guiLine3
+                guiLine3.previousGUIPoint = guiPoint3
+                guiLine3.nextGUIPoint = guiPoint4
+
+                let guiLine4 = new GUIStraightLine(point4, point1)
+                guiPoint1.previousGUILine = guiLine4
+                guiPoint4.nextGUILine = guiLine4
+                guiLine4.previousGUIPoint = guiPoint4
+                guiLine4.nextGUIPoint = guiPoint1
+
+                this._ifSend = 1
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
+
+                this._multiSelectingRectPos.x1 = 0
+                this._multiSelectingRectPos.y1 = 0
+                this._gui!.multiSelectingRect!.baseBufferElement.width = 0
+                this._gui!.multiSelectingRect!.baseBufferElement.height = 0
+                this._isDragging = false
+                this._isSelecting = false
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
+
+                this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
+            }
+            else if (this._isCir) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                let radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2))
+                let controlRadius = (4 / 3) * (Math.sqrt(2) - 1) * radius
+                let point1 = new Point(this._circlePos.x1, this._circlePos.y1 + radius)
+                let point2 = new Point(this._circlePos.x1 + radius, this._circlePos.y1)
+                let point3 = new Point(this._circlePos.x1, this._circlePos.y1 - radius)
+                let point4 = new Point(this._circlePos.x1 - radius, this._circlePos.y1)
+
+                let guiPoint1 = new GUIOnPoint(point1)
+                let guiPoint2 = new GUIOnPoint(point2)
+                let guiPoint3 = new GUIOnPoint(point3)
+                let guiPoint4 = new GUIOnPoint(point4)
+
+                let controlPoint11 = new Point(this._circlePos.x1 - controlRadius, this._circlePos.y1 + radius)
+                let controlPoint12 = new Point(this._circlePos.x1 + controlRadius, this._circlePos.y1 + radius)
+                let controlGUIPoint11 = new GUIOffPoint(controlPoint11)
+                let controlGUIPoint12 = new GUIOffPoint(controlPoint12)
+                let controlGUILine11 = new GUIControlLine(controlPoint11, point1, guiPoint1, controlGUIPoint11)
+                let controlGUILine12 = new GUIControlLine(controlPoint12, point1, guiPoint1, controlGUIPoint12)
+
+                let controlPoint21 = new Point(this._circlePos.x1 + radius, this._circlePos.y1 + controlRadius)
+                let controlPoint22 = new Point(this._circlePos.x1 + radius, this._circlePos.y1 - controlRadius)
+                let controlGUIPoint21 = new GUIOffPoint(controlPoint21)
+                let controlGUIPoint22 = new GUIOffPoint(controlPoint22)
+                let controlGUILine21 = new GUIControlLine(controlPoint21, point2, guiPoint2, controlGUIPoint21)
+                let controlGUILine22 = new GUIControlLine(controlPoint22, point2, guiPoint2, controlGUIPoint22)
+
+                let controlPoint31 = new Point(this._circlePos.x1 + controlRadius, this._circlePos.y1 - radius)
+                let controlPoint32 = new Point(this._circlePos.x1 - controlRadius, this._circlePos.y1 - radius)
+                let controlGUIPoint31 = new GUIOffPoint(controlPoint31)
+                let controlGUIPoint32 = new GUIOffPoint(controlPoint32)
+                let controlGUILine31 = new GUIControlLine(controlPoint31, point3, guiPoint3, controlGUIPoint31)
+                let controlGUILine32 = new GUIControlLine(controlPoint32, point3, guiPoint3, controlGUIPoint32)
+
+                let controlPoint41 = new Point(this._circlePos.x1 - radius, this._circlePos.y1 - controlRadius)
+                let controlPoint42 = new Point(this._circlePos.x1 - radius, this._circlePos.y1 + controlRadius)
+                let controlGUIPoint41 = new GUIOffPoint(controlPoint41)
+                let controlGUIPoint42 = new GUIOffPoint(controlPoint42)
+                let controlGUILine41 = new GUIControlLine(controlPoint41, point4, guiPoint4, controlGUIPoint41)
+                let controlGUILine42 = new GUIControlLine(controlPoint42, point4, guiPoint4, controlGUIPoint42)
+
+                let guiLine1 = new GUICubicCurve(point1, point2, controlPoint12, controlPoint21)
+                let guiLine2 = new GUICubicCurve(point2, point3, controlPoint22, controlPoint31)
+                let guiLine3 = new GUICubicCurve(point3, point4, controlPoint32, controlPoint41)
+                let guiLine4 = new GUICubicCurve(point4, point1, controlPoint42, controlPoint11)
+
+                controlGUIPoint11.correspondingGUIPoint = guiPoint1
+                controlGUIPoint12.correspondingGUIPoint = guiPoint1
+                controlGUIPoint21.correspondingGUIPoint = guiPoint2
+                controlGUIPoint22.correspondingGUIPoint = guiPoint2
+                controlGUIPoint31.correspondingGUIPoint = guiPoint3
+                controlGUIPoint32.correspondingGUIPoint = guiPoint3
+                controlGUIPoint41.correspondingGUIPoint = guiPoint4
+                controlGUIPoint42.correspondingGUIPoint = guiPoint4
+                controlGUIPoint11.correspondingGUIControlLine = controlGUILine11
+                controlGUIPoint12.correspondingGUIControlLine = controlGUILine12
+                controlGUIPoint21.correspondingGUIControlLine = controlGUILine21
+                controlGUIPoint22.correspondingGUIControlLine = controlGUILine22
+                controlGUIPoint31.correspondingGUIControlLine = controlGUILine31
+                controlGUIPoint32.correspondingGUIControlLine = controlGUILine32
+                controlGUIPoint41.correspondingGUIControlLine = controlGUILine41
+                controlGUIPoint42.correspondingGUIControlLine = controlGUILine42
+
+                controlGUILine11.onPoint = guiPoint1
+                controlGUILine12.onPoint = guiPoint1
+                controlGUILine21.onPoint = guiPoint2
+                controlGUILine22.onPoint = guiPoint2
+                controlGUILine31.onPoint = guiPoint3
+                controlGUILine32.onPoint = guiPoint3
+                controlGUILine41.onPoint = guiPoint4
+                controlGUILine42.onPoint = guiPoint4
+
+                controlGUILine11.offPoint = controlGUIPoint11
+                controlGUILine12.offPoint = controlGUIPoint12
+                controlGUILine21.offPoint = controlGUIPoint21
+                controlGUILine22.offPoint = controlGUIPoint22
+                controlGUILine31.offPoint = controlGUIPoint31
+                controlGUILine32.offPoint = controlGUIPoint32
+                controlGUILine41.offPoint = controlGUIPoint41
+                controlGUILine42.offPoint = controlGUIPoint42
+
+                guiPoint1.previousGUILine = guiLine4
+                guiPoint1.nextGUILine = guiLine1
+                guiPoint1.previousControlPoint = controlGUIPoint11
+                guiPoint1.nextControlPoint = controlGUIPoint12
+
+                guiPoint2.previousGUILine = guiLine1
+                guiPoint2.nextGUILine = guiLine2
+                guiPoint2.previousControlPoint = controlGUIPoint21
+                guiPoint2.nextControlPoint = controlGUIPoint22
+
+                guiPoint3.previousGUILine = guiLine2
+                guiPoint3.nextGUILine = guiLine3
+                guiPoint3.previousControlPoint = controlGUIPoint31
+                guiPoint3.nextControlPoint = controlGUIPoint32
+
+                guiPoint4.previousGUILine = guiLine3
+                guiPoint4.nextGUILine = guiLine4
+                guiPoint4.previousControlPoint = controlGUIPoint41
+                guiPoint4.nextControlPoint = controlGUIPoint42
+
+                guiLine1.previousGUIPoint = guiPoint1
+                guiLine1.nextGUIPoint = guiPoint2
+                guiLine2.previousGUIPoint = guiPoint2
+                guiLine2.nextGUIPoint = guiPoint3
+                guiLine3.previousGUIPoint = guiPoint3
+                guiLine3.nextGUIPoint = guiPoint4
+                guiLine4.previousGUIPoint = guiPoint4
+                guiLine4.nextGUIPoint = guiPoint1
+
+                this._ifSend = 1
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
+
+                this._circlePos.x1 = 0
+                this._circlePos.y1 = 0
+                this._gui!.multiSelectingCircle!.baseBufferElement.center.x = 0
+                this._gui!.multiSelectingCircle!.baseBufferElement.center.y = 0
+                this._gui!.multiSelectingCircle!.baseBufferElement.radius = 0
+                this._isDragging = false
+                this._isSelecting = false
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
+
+                this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
+            }
+            else if (this._isTri) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                let radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2))
+
+                let point1 = new Point(this._circlePos.x1, this._circlePos.y1 - radius)
+                let point2 = new Point(this._circlePos.x1 + Math.sqrt(3) / 2 * radius, this._circlePos.y1 + radius / 2)
+                let point3 = new Point(this._circlePos.x1 - Math.sqrt(3) / 2 * radius, this._circlePos.y1 + radius / 2)
+
+                let guiPoint1 = new GUIOnPoint(point1)
+                let guiPoint2 = new GUIOnPoint(point2)
+                let guiPoint3 = new GUIOnPoint(point3)
+
+                let guiLine1 = new GUIStraightLine(point1, point2)
+                guiPoint2.previousGUILine = guiLine1
+                guiPoint1.nextGUILine = guiLine1
+                guiLine1.previousGUIPoint = guiPoint1
+                guiLine1.nextGUIPoint = guiPoint2
+
+                let guiLine2 = new GUIStraightLine(point2, point3)
+                guiPoint3.previousGUILine = guiLine2
+                guiPoint2.nextGUILine = guiLine2
+                guiLine2.previousGUIPoint = guiPoint2
+                guiLine2.nextGUIPoint = guiPoint3
+
+                let guiLine3 = new GUIStraightLine(point3, point1)
+                guiPoint1.previousGUILine = guiLine3
+                guiPoint3.nextGUILine = guiLine3
+                guiLine3.previousGUIPoint = guiPoint3
+                guiLine3.nextGUIPoint = guiPoint1
+
+                this._ifSend = 1
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
+
+                this._circlePos.x1 = 0
+                this._circlePos.y1 = 0
+                this._gui!.multiSelectingTri!.baseBufferElement.center.x = 0
+                this._gui!.multiSelectingTri!.baseBufferElement.center.y = 0
+                this._gui!.multiSelectingTri!.baseBufferElement.radius = 0
+                this._isDragging = false
+                this._isSelecting = false
+                this._isRect = false
+                this._isCir = false
+                this._isTri = false
+
+                this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
+            }
+            if (isPrimary(e)) {
+                this._isPointerDown.primary = false
+                this._currentEvent.primary = null
+                this._lastEvent.primary = null
+            }
+            else {
+                this._isPointerDown.secondary = false
+                this._currentEvent.secondary = null
+                this._lastEvent.secondary = null
+            }
         }
+
     }
 
     /** 触控、鼠标、笔 */
@@ -1286,7 +1643,7 @@ export default class SvgEditor {
         const isPrimary = (e: PointerEvent) => e.isPrimary
 
         const onPointerDown = (e: KonvaEventObject<PointerEvent>) => {
-            console.debug("onpointer down")
+            // console.debug("onpointer down")
             this.changePointerStatus(e.target, e.evt)
         }
 
@@ -1300,7 +1657,7 @@ export default class SvgEditor {
         }
 
         const onPointerUp = (e: KonvaEventObject<PointerEvent>) => {
-            console.debug("onpointer up")
+            // console.debug("onpointer up")
             this.changePointerStatus(e.target, e.evt)
         }
 
@@ -1390,7 +1747,7 @@ export default class SvgEditor {
         }
         // element!.comment = ""
     }
-    public Mark(svgMarkedId: number){
+    public Mark(svgMarkedId: number) {
         let element = this.gui!.guiBaseElements.get(svgMarkedId)
         // console.log(element)
         if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
@@ -1422,9 +1779,9 @@ export default class SvgEditor {
 
     private renderOneSegment(segement: any) {
         let { gui, baseBuffer } = GlobalManager.instance
-        if(segement[0]=='T'){
-            let point = new Point(segement[1],segement[2]);
-            let guiText = new GUIText(point,segement[3]);
+        if (segement[0] == 'T') {
+            let point = new Point(segement[1], segement[2]);
+            let guiText = new GUIText(point, segement[3]);
             console.log(guiText)
             return
         }
@@ -1591,7 +1948,7 @@ export default class SvgEditor {
         console.log("saveSVG")
         for (let element of this._gui!.guiBaseElements.values()) {
             // console.log("delete",element)
-            if (element.isVisible == false && (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint|| element instanceof GUIText)) {
+            if (element.isVisible == false && (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIText)) {
                 console.log("delete", element)
                 element.delete()
             }
@@ -1605,7 +1962,7 @@ export default class SvgEditor {
                 element.isVisible = false
             } else {
                 if (element.isVisible) {
-                    console.log("element.isVisible", element, element.isVisible)
+                    // console.log("element.isVisible", element, element.isVisible)
                     //没访问问过的线段
                     let isClosed = true
                     let arr = []
@@ -1621,8 +1978,8 @@ export default class SvgEditor {
                         nextGUILine = (nextGUILine!.nextGUIPoint! as GUIOnPoint).nextGUILine
                     }
                     if (isClosed) {
-                        console.log("isClosed", element)
-                        console.log("isClosed", arr)
+                        // console.log("isClosed", element)
+                        // console.log("isClosed", arr)
                         for (let i = 0; i < arr.length; i++) {
                             if (arr[i] instanceof GUICubicCurve) {
                                 arr[i].baseBufferElement.config.fill = 'black'
@@ -1637,7 +1994,7 @@ export default class SvgEditor {
                 }
             }
         }
-        console.log("changeToPreview finish", this._gui!.guiBaseElements)
+        // console.log("changeToPreview finish", this._gui!.guiBaseElements)
     }
 }
 
