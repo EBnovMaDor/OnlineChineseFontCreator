@@ -160,7 +160,7 @@
 
 					</div>
 				</div>
-
+				<img src="../image/image1.png" width="1000" height="600" style="position:fixed; top:100px;left:250px;"/>
 				<!--字体编辑画布-->
 				<div id="canvas" @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
 
@@ -715,5 +715,7 @@
 		height: calc(100vh - 52px);
 		touch-action: none;
 		user-select: none;
+		/*background-image: url("../image/image1.png");
+		background-size: cover;*/ /* 图片适应 div 大小 */
 	}
 </style>
