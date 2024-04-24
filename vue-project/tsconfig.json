@@ -2,6 +2,8 @@
   "compilerOptions": {
     "noUnusedLocals": false,
     "noUnusedParameters": false,   
+    "ignoreDeprecations": "5.0",
+    "suppressImplicitAnyIndexErrors":true,
   },
   "files": [],
   "references": [

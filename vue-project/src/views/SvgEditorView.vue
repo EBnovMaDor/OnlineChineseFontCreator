@@ -109,7 +109,6 @@ export default defineComponent({
     methods: {
         importSVG() {
             svgEditor?.importSVG(this.svgpath)
-            svgEditor!.ifSend = 1
         },
         exportSVG() {
             svgEditor?.exportSVG()
@@ -233,18 +232,18 @@ export default defineComponent({
             const msg = JSON.parse(e.data.toString());
             // console.log(msg)
             // console.log('FE:WebSocket:message',msg.msg)
-            this.list= []
-            for (let i = 0; i < msg.cmt.length; i++) {
-                console.log("111")
-            // let element = msg.cmt[i]
-            // element!.comment = msg.cmt[i]
-            var mark:any = { gui_id: msg.cmt[i], gui_mark: msg.cmt[i+1]} 
-            i++
-            this.list.push(mark)
-            }
             if(svgEditor)
-                svgEditor.acceptSVG(msg.svg,msg.cmt)
-            // console.log('FE:WebSocket:message',e)
+                svgEditor.acceptSVG(msg.svg)
+            this.list= []
+            let comment = svgEditor!.transCmt()
+            console.log(comment)
+            for (let i = 0; i < comment.length; i++) {
+                console.log("111")
+                var mark = { gui_id: comment[i], gui_mark: comment[i+1]} 
+                i++
+                this.list.push(mark)
+            }
+            console.log(this.list)
         },
         changeActive(e: MouseEvent) {
             // console.log(e);
@@ -316,15 +315,12 @@ export default defineComponent({
                     // console.log("svgEditor",svgEditor)
                     if (svgEditor) {
                         svgEditor.ifSend = 0
-                        let comment = svgEditor.transCmt()
-                        console.log("我是vue里的comment",comment)
                         let segment = svgEditor.transSVG()
                         // console.log("我是vue里的segment",segment)
                         ws.send(JSON.stringify({
                             id: new Date().getTime(),
                             user: this.username,
-                            svg: segment,
-                            cmt:comment
+                            svg: segment
                         }))
                         // console.log("我是vue里的send")
                     }

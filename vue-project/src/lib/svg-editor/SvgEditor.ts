@@ -175,15 +175,18 @@ export default class SvgEditor {
         let allSegements = []
         // let minmax = [this._svgMinX, this._svgMinY, this._svgMaxX, this._svgMaxY, this._bufferMinX, this._bufferMinY, this._bufferMaxX, this._bufferMaxY]
         // allSegements.push(minmax)
-        for (let element of this._gui!.guiBaseElements.values()) {
 
+        for (let element of this._gui!.guiBaseElements.values()) {
             let lines = []
             if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
                 // console.log("18test", element.previousGUIPoint?.previousGUILine?.nextGUIPoint)
                 if (element.isVisible == true) {
                     let segement = []
-
+                    let comment = []
                     segement.push('C')
+                    comment.push(element.comment)
+                    comment.push(element.previousGUIPoint?.comment)
+                    comment.push(element.nextGUIPoint?.comment)
                     // console.log("MAP", this._gui!.guiBaseElements)
                     // console.log("ELEMENT:!!!", element)
                     // console.log("START OF A LINE: ", segement)
@@ -192,15 +195,24 @@ export default class SvgEditor {
                         segement.push(element.previousGUIPoint?.baseBufferElement.center.y)
                         segement.push(element.nextGUIPoint?.baseBufferElement.center.x)
                         segement.push(element.nextGUIPoint?.baseBufferElement.center.y)
+                        comment.push("")
+                        comment.push("")
+                        comment.push("")
+                        comment.push("")
                     }
                     else {
                         segement.push(element.previousGUIPoint?.nextControlPoint?.baseBufferElement.center.x)
                         segement.push(element.previousGUIPoint?.nextControlPoint?.baseBufferElement.center.y)
                         segement.push(element.nextGUIPoint?.previousControlPoint?.baseBufferElement.center.x)
                         segement.push(element.nextGUIPoint?.previousControlPoint?.baseBufferElement.center.y)
+                        comment.push(element.previousGUIPoint?.nextControlPoint?.comment)
+                        comment.push(element.previousGUIPoint?.nextControlPoint?.correspondingGUIControlLine?.comment)
+                        comment.push(element.nextGUIPoint?.previousControlPoint?.comment)
+                        comment.push(element.nextGUIPoint?.previousControlPoint?.correspondingGUIControlLine?.comment)
                     }
                     segement.push(element.nextGUIPoint?.baseBufferElement.center.x)
                     segement.push(element.nextGUIPoint?.baseBufferElement.center.y)
+                    segement.push(comment)
                     // console.log("this is a line: ", segement)
                     lines.push(segement)
                     this.inVisible(element)
@@ -216,7 +228,11 @@ export default class SvgEditor {
                         // console.log("preline.next", preLine.nextGUIPoint)
                         // console.log("preline.pre", preLine.previousGUIPoint)
                         segement = []
+                        comment = []
                         segement.push('C');
+                        comment.push(preLine.comment)
+                        comment.push(preLine.previousGUIPoint?.comment)
+                        comment.push(preLine.nextGUIPoint?.comment)
                         // console.log("START OF A PRE LINE: ", segement)
                         if (preLine instanceof GUIStraightLine || preLine instanceof GUICubicCurve) {
                             if (preLine instanceof GUIStraightLine) {
@@ -224,15 +240,24 @@ export default class SvgEditor {
                                 segement.push(preLine.previousGUIPoint?.baseBufferElement.center.y)
                                 segement.push(preLine.nextGUIPoint?.baseBufferElement.center.x)
                                 segement.push(preLine.nextGUIPoint?.baseBufferElement.center.y)
+                                comment.push("")
+                                comment.push("")
+                                comment.push("")
+                                comment.push("")
                             }
                             else {
                                 segement.push(preLine.previousGUIPoint?.nextControlPoint?.baseBufferElement.center.x)
                                 segement.push(preLine.previousGUIPoint?.nextControlPoint?.baseBufferElement.center.y)
                                 segement.push(preLine.nextGUIPoint?.previousControlPoint?.baseBufferElement.center.x)
                                 segement.push(preLine.nextGUIPoint?.previousControlPoint?.baseBufferElement.center.y)
+                                comment.push(preLine.previousGUIPoint?.nextControlPoint?.comment)
+                                comment.push(preLine.previousGUIPoint?.nextControlPoint?.correspondingGUIControlLine?.comment)
+                                comment.push(preLine.nextGUIPoint?.previousControlPoint?.comment)
+                                comment.push(preLine.nextGUIPoint?.previousControlPoint?.correspondingGUIControlLine?.comment)
                             }
                             segement.push(preLine.nextGUIPoint?.baseBufferElement.center.x)
                             segement.push(preLine.nextGUIPoint?.baseBufferElement.center.y)
+                            segement.push(comment)
                             // console.log("this is a pre line: ", segement)
                             lines.unshift(segement)
 
@@ -260,7 +285,11 @@ export default class SvgEditor {
                             // console.log("NEXTLINE:!!!", nextLine)
                             // console.log("nextline.nextpoint:", nextLine.nextGUIPoint)
                             segement = []
+                            comment = []
                             segement.push('C');
+                            comment.push(nextLine.comment)
+                            comment.push(nextLine.previousGUIPoint?.comment)
+                            comment.push(nextLine.nextGUIPoint?.comment)
                             // console.log("START OF A NEXT LINE: ", segement)
                             if (nextLine instanceof GUIStraightLine || nextLine instanceof GUICubicCurve)
                             // if (nextLine instanceof GUIStraightLine || nextLine instanceof GUICubicCurve)
@@ -270,15 +299,25 @@ export default class SvgEditor {
                                     segement.push(nextLine.previousGUIPoint?.baseBufferElement.center.y)
                                     segement.push(nextLine.nextGUIPoint?.baseBufferElement.center.x)
                                     segement.push(nextLine.nextGUIPoint?.baseBufferElement.center.y)
+                                    comment.push("")
+                                    comment.push("")
+                                    comment.push("")
+                                    comment.push("")
                                 }
                                 else {
                                     segement.push(nextLine.previousGUIPoint?.nextControlPoint?.baseBufferElement.center.x)
                                     segement.push(nextLine.previousGUIPoint?.nextControlPoint?.baseBufferElement.center.y)
                                     segement.push(nextLine.nextGUIPoint?.previousControlPoint?.baseBufferElement.center.x)
                                     segement.push(nextLine.nextGUIPoint?.previousControlPoint?.baseBufferElement.center.y)
+                                    comment.push(nextLine.previousGUIPoint?.nextControlPoint?.comment)
+                                    comment.push(nextLine.previousGUIPoint?.nextControlPoint?.correspondingGUIControlLine?.comment)
+                                    comment.push(nextLine.nextGUIPoint?.previousControlPoint?.comment)
+                                    comment.push(nextLine.nextGUIPoint?.previousControlPoint?.correspondingGUIControlLine?.comment)
+
                                 }
                                 segement.push(nextLine.nextGUIPoint?.baseBufferElement.center.x)
                                 segement.push(nextLine.nextGUIPoint?.baseBufferElement.center.y)
+                                segement.push(comment)
                                 // console.log("this is a next line: ", segement)
                                 lines.push(segement)
 
@@ -320,6 +359,7 @@ export default class SvgEditor {
 
     public transCmt(): Array<any> {
         let allComments = []
+        console.log("this._gui!.guiBaseElements",this._gui!.guiBaseElements)
         for (let element of this._gui!.guiBaseElements.values()) {
             if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIControlLine) {
                 if (element.comment != "") {
@@ -331,7 +371,7 @@ export default class SvgEditor {
         return allComments
     }
 
-    public acceptSVG(allSegements: Array<any>, allComments: Array<any>) {
+    public acceptSVG(allSegements: Array<any>) {
         for (let element of this._gui!.guiBaseElements.values()) {
             if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIText) {
                 // console.log("delete", element)
@@ -350,25 +390,26 @@ export default class SvgEditor {
         // this._bufferMaxX = allSegements[0][6]
         // this._bufferMaxY = allSegements[0][7]
 
-        console.log(this._svgMinX)
+        // console.log(this._svgMinX)
+        console.log("accept", allSegements)
         for (let i = 0; i < allSegements.length; i++) {
             this.renderOneSegment(allSegements[i])
         }
-        for (let i = 0; i < allComments.length; i++) {
-            let element = this.gui.guiBaseElements.get(allComments[i])
-            i++
-            element!.comment = allComments[i]
-            // console.log("commented element",element)
-            // if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
-            //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
-            // }
-            // else if (element instanceof GUIOnPoint) {
-            //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
-            // }
-            // else if (element instanceof GUIOffPoint) {
-            //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
-            // }
-        }
+        // for (let i = 0; i < allComments.length; i++) {
+        //     let element = this.gui.guiBaseElements.get(allComments[i])
+        //     i++
+        //     element!.comment = allComments[i]
+        //     // console.log("commented element",element)
+        //     // if (element instanceof GUIStraightLine || element instanceof GUICubicCurve) {
+        //     //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
+        //     // }
+        //     // else if (element instanceof GUIOnPoint) {
+        //     //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
+        //     // }
+        //     // else if (element instanceof GUIOffPoint) {
+        //     //     element.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
+        //     // }
+        // }
     }
 
     private inVisible(element: GUIStraightLine | GUICubicCurve | GUIText) {
@@ -1326,10 +1367,10 @@ export default class SvgEditor {
                 let y2 = bufferY
                 let l = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
                 let a = 0
-                if(l!=0){
+                if (l != 0) {
                     a = Math.round(Math.asin(Math.abs(y1 - y2) / l) / Math.PI * 180)
                 }
-                
+
                 this._posSegment[2] = bufferX
                 this._posSegment[3] = bufferY
                 this._posSegment[4] = l
@@ -1358,7 +1399,7 @@ export default class SvgEditor {
             else if (this._isCir) {
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
-                this._gui!.multiSelectingCircle!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2)) * 2
+                this._gui!.multiSelectingCircle!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2))
             }
             else if (this._isTri) {
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
@@ -2021,6 +2062,11 @@ export default class SvgEditor {
                 guiLine.previousGUIPoint = currentGUIPoint
                 guiLine.nextGUIPoint = targetGUIPoint
 
+                // console.log("render!!",segments[i][7])
+                guiLine.comment = segments[i][7][0]
+                guiLine.previousGUIPoint.comment = segments[i][7][1]
+                guiLine.nextGUIPoint.comment = segments[i][7][2]
+
                 currentGUILine = guiLine
                 currentPoint = targetPoint
                 currentGUIPoint = targetGUIPoint
@@ -2060,6 +2106,14 @@ export default class SvgEditor {
                 guiLine.previousGUIPoint = currentGUIPoint
                 guiLine.nextGUIPoint = targetGUIPoint
 
+                guiLine.comment = segments[i][7][0]
+                guiLine.previousGUIPoint.comment = segments[i][7][1]
+                guiLine.nextGUIPoint.comment = segments[i][7][2]
+                guiLine.previousGUIPoint.nextControlPoint!.comment = segments[i][7][3]
+                guiLine.previousGUIPoint.nextControlPoint!.correspondingGUIControlLine!.comment == segments[i][7][4]
+                guiLine.nextGUIPoint.previousControlPoint!.comment = segments[i][7][5]
+                guiLine.nextGUIPoint.previousControlPoint!.correspondingGUIControlLine!.comment == segments[i][7][6]
+
                 currentPoint = targetPoint
                 currentGUIPoint = targetGUIPoint
                 currentGUILine = guiLine
@@ -2097,6 +2151,7 @@ export default class SvgEditor {
         // let minY = 1e7;
         // let maxX = -1e7;
         // let maxY = -1e7;
+        let emptyComment = ["", "", "", "", "", "", ""]
         for (let i = 0; i < segments.length; i++) {
             let command = segments[i][0]
             if (command == 'M') {
@@ -2119,6 +2174,8 @@ export default class SvgEditor {
                 // if (segments[i][6] < minY) minY = segments[i][6]
                 // if (segments[i][5] > maxX) maxX = segments[i][5]
                 // if (segments[i][6] > maxY) maxY = segments[i][6]
+                segments[i].push(emptyComment)
+                // console.log("import",segments[i])
                 lines.push(segments[i])
                 if (i == segments.length - 1 || segments[i + 1][0] == 'M') {
                     //该段最后一个点
@@ -2159,6 +2216,7 @@ export default class SvgEditor {
             }
         }
         for (let i = 0; i < allSegements.length; i++) {
+            // console.log("render:",allSegements[i])
             this.renderOneSegment(allSegements[i])
         }
     }
@@ -2172,7 +2230,7 @@ export default class SvgEditor {
         for (let element of this._gui!.guiBaseElements.values()) {
             // console.log("delete",element)
             if (element.isVisible == false && (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIText)) {
-                console.log("delete", element)
+                // console.log("delete", element)
                 element.delete()
             }
         }

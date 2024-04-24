@@ -29,7 +29,7 @@ export default class GUI implements Observer {
     private _decoratedGroup: Konva.Group;
 
     private _guiElementIndex: number = 0;
-    private _guiBaseElements: Map<string | number, GUIBaseElement> = new Map<string | number, GUIBaseElement>();
+    private _guiBaseElements: Map<number, GUIBaseElement> = new Map<number, GUIBaseElement>();
     private _guiDecoratedElements: Map<string | number, GUIDecoratedElement> = new Map<string | number, GUIDecoratedElement>();
 
     private _selectedElements: Map<string | number, GUIBaseElement> = new Map<string | number, GUIBaseElement>();
@@ -158,7 +158,7 @@ export default class GUI implements Observer {
         this._selectedElements = value
     }
 
-    get guiBaseElements(): Map<string | number, GUIBaseElement> {
+    get guiBaseElements(): Map<number, GUIBaseElement> {
         return this._guiBaseElements
     }
 
