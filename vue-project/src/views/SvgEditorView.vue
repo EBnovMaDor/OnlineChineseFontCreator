@@ -18,6 +18,7 @@
         <el-button type="primary" @click="addCircle"> addCircle </el-button>
         <el-button type="primary" @click="addTriangle"> addTriangle </el-button>
         <el-button type="primary" @click="mark"> mark </el-button>
+        <el-button type="primary" @click="markText"> markText </el-button>
         <el-button type="primary" @click="deleteMark"> deletemark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
@@ -133,6 +134,7 @@ export default defineComponent({
         addTriangle() {
             svgEditor?.setTool('addTriangle')
         },
+        
         send() {
             const svgPath = this.svgpath;
 
@@ -148,6 +150,9 @@ export default defineComponent({
         },
         mark(){
             svgEditor?.setTool('mark')
+        },
+        markText(){
+            svgEditor?.setTool('markText')
         },
         editComment(id : number){
             svgEditor!.markedId = id

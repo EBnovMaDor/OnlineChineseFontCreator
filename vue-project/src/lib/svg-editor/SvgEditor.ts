@@ -63,6 +63,16 @@ export default class SvgEditor {
     private _markPoint: Point = new Point;
     private _textPoint: Point = new Point;
 
+    private _svgMinX: number = 0;
+    private _svgMaxX: number = 0;
+    private _svgMinY: number = 0;
+    private _svgMaxY: number = 0;
+
+    private _bufferMinX: number = 0;
+    private _bufferMinY: number = 0;
+    private _bufferMaxX: number = 0;
+    private _bufferMaxY: number = 0;
+
     private _isRect: boolean = false;
     private _isTri: boolean = false;
     private _isCir: boolean = false;
@@ -157,9 +167,10 @@ export default class SvgEditor {
     }
 
     public transSVG(): Array<any> {
-        // if (this._currentTool != 'editor') { this.saveSVG() }
+        if (this._currentTool != 'editor') { this.saveSVG() }
         let allSegements = []
-
+        let minmax = [this._svgMinX, this._svgMinY, this._svgMaxX, this._svgMaxY, this._bufferMinX, this._bufferMinY, this._bufferMaxX, this._bufferMaxY]
+        allSegements.push(minmax)
         for (let element of this._gui!.guiBaseElements.values()) {
 
             let lines = []
@@ -326,7 +337,17 @@ export default class SvgEditor {
         }
         this._gui!.guiElementIndex = 0
         // console.log("deleteMAP?????", this._gui!.guiBaseElements)
-        for (let i = 0; i < allSegements.length; i++) {
+        this._svgMinX = allSegements[0][0]
+        this._svgMinY = allSegements[0][1]
+        this._svgMaxX = allSegements[0][2]
+        this._svgMaxY = allSegements[0][3]
+        this._bufferMinX = allSegements[0][4]
+        this._bufferMinY = allSegements[0][5]
+        this._bufferMaxX = allSegements[0][6]
+        this._bufferMaxY = allSegements[0][7]
+
+        console.log(this._svgMinX)
+        for (let i = 1; i < allSegements.length; i++) {
             this.renderOneSegment(allSegements[i])
         }
         for (let i = 0; i < allComments.length; i++) {
@@ -528,7 +549,7 @@ export default class SvgEditor {
                         if (this._gui!.selectedElements.size == 0) {
                             // console.log("1、先前没有选中任何元素,新增元素")
                             target.guiElement.isSelected = true
-                            // console.log("当前选中的元素：", target.guiElement)
+                            console.log("当前选中的元素：", target.guiElement)
                             // if (target.guiElement.comment != "") {
                             //     this._isMarked = true
                             //     this._markedId = target.guiElement.guiElementId
@@ -1047,14 +1068,14 @@ export default class SvgEditor {
             //添加文本
             else if (this._currentTool == 'markText') {
                 console.log("Text")
-                if (this._ifMarkedCanvas == false) { 
-                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
-                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
-                let targetPoint = new Point(bufferX, bufferY)
-                let textPos = new Point(e.clientX, e.clientY)               
-                this._markPoint = targetPoint
-                this._textPoint = textPos
-                this._ifMarkedCanvas = true
+                if (this._ifMarkedCanvas == false) {
+                    let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                    let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                    let targetPoint = new Point(bufferX, bufferY)
+                    let textPos = new Point(e.clientX, e.clientY)
+                    this._markPoint = targetPoint
+                    this._textPoint = textPos
+                    this._ifMarkedCanvas = true
                 }
 
             }
@@ -1345,7 +1366,8 @@ export default class SvgEditor {
                 }
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
 
-            } else if (this._isSelecting) {
+            }
+            else if (this._isSelecting) {
                 // console.log("先前处于框选行为，此为结束框选终点，计算框选矩形相关内容")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -1894,6 +1916,11 @@ export default class SvgEditor {
         let bufferMaxX = baseBuffer.maxX - bufferWidth / 3;
         let bufferMaxY = baseBuffer.maxY - bufferHeight / 3;
 
+        this._bufferMinX = bufferMinX
+        this._bufferMinY = bufferMinY
+        this._bufferMaxX = bufferMaxX
+        this._bufferMaxY = bufferMaxY
+
         let minX = 1e7;
         let minY = 1e7;
         let maxX = -1e7;
@@ -1939,6 +1966,10 @@ export default class SvgEditor {
         }
         console.log("minX, maxX, minY, maxY", minX, maxX, minY, maxY)
         console.log("allSegements", allSegements)
+        this._svgMinX = minX
+        this._svgMaxX = maxX
+        this._svgMinY = minY
+        this._svgMaxY = maxY
 
         let newSegments = []
         for (let i = 0; i < allSegements.length; i++) {
