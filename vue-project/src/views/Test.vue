@@ -577,21 +577,36 @@
 				console.log('FE:WebSocket:error', e)
 			},
 			handleWsMessage(e: any) {
+				// const msg = JSON.parse(e.data.toString());
+				// // console.log(msg)
+				// // console.log('FE:WebSocket:message',msg.msg)
+				// this.list = []
+				// for (let i = 0; i < msg.cmt.length; i++) {
+				// 	console.log("111")
+				// 	// let element = msg.cmt[i]
+				// 	// element!.comment = msg.cmt[i]
+				// 	var mark: any = { gui_id: msg.cmt[i], gui_mark: msg.cmt[i + 1] }
+				// 	i++
+				// 	this.list.push(mark)
+				// }
+				// if (svgEditor)
+				// 	svgEditor.acceptSVG(msg.svg, msg.cmt)
+				// // console.log('FE:WebSocket:message',e)
 				const msg = JSON.parse(e.data.toString());
-				// console.log(msg)
-				// console.log('FE:WebSocket:message',msg.msg)
-				this.list = []
-				for (let i = 0; i < msg.cmt.length; i++) {
+            // console.log(msg)
+            // console.log('FE:WebSocket:message',msg.msg)
+				if(svgEditor)
+					svgEditor.acceptSVG(msg.svg)
+				this.list= []
+				let comment = svgEditor!.transCmt()
+				console.log(comment)
+				for (let i = 0; i < comment.length; i++) {
 					console.log("111")
-					// let element = msg.cmt[i]
-					// element!.comment = msg.cmt[i]
-					var mark: any = { gui_id: msg.cmt[i], gui_mark: msg.cmt[i + 1] }
+					var mark = { gui_id: comment[i], gui_mark: comment[i+1]} 
 					i++
 					this.list.push(mark)
 				}
-				if (svgEditor)
-					svgEditor.acceptSVG(msg.svg, msg.cmt)
-				// console.log('FE:WebSocket:message',e)
+				console.log(this.list)
 			},
 			changeActive(e: MouseEvent) {
 				// console.log(e);
