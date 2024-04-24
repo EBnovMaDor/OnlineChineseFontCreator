@@ -165,8 +165,10 @@
 				<div id="canvas" @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
 
 				<!--底部栏-->
-				<div class="footer">
-					<p>Footer</p>
+				<div class="footer" >
+					<div class="preview">
+						<span>大今国意我永然警转酬随风鹰</span>
+					</div>
 
 				</div>
 			</div>
@@ -402,6 +404,9 @@
 			},
 			test() {
 				svgEditor?.test()
+			},
+			backtest() {
+				svgEditor?.backtest()
 			},
 			move() {
 				svgEditor?.setTool('move')
