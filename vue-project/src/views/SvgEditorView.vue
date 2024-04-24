@@ -19,9 +19,13 @@
         <el-button type="primary" @click="addTriangle"> addTriangle </el-button>
         <el-button type="primary" @click="mark"> mark </el-button>
         <el-button type="primary" @click="markText"> markText </el-button>
+        <el-button type="primary" @click="ruler"> ruler </el-button>
         <el-button type="primary" @click="deleteMark"> deletemark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+        <div v-if = "pointPos">点的坐标 x: {{ pointx1 }}, y:{{ pointy1 }}</div>
+        <div v-if = "linePos">直线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }}); 直线的长度 : {{ length1 }} ; 线的角度: {{ angle1 }}度</div>
+        <div v-if = "curvePos">曲线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }}); 控制线长度：{{ length1 }} ; {{ length2 }} ; 线的角度: {{ angle1 }} 度; {{ angle2 }}度</div>
     </div>
     <div>
     <div v-if="showInputBox"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput">提交</el-button></div>
@@ -75,7 +79,18 @@ export default defineComponent({
             ifSend: 0,
             markedId: -1,
             comment:"1",
-            list: [] as any
+            list: [] as any,
+            pointPos:false,
+            linePos:false,
+            curvePos: false,
+            pointx1 : 0,
+            pointx2 : 0,
+            pointy1 : 0,
+            pointy2 : 0,
+            length1 : 0,
+            length2 : 0,
+            angle1 : 0,
+            angle2 : 0
         }
     },
     mounted() {
@@ -94,6 +109,7 @@ export default defineComponent({
     methods: {
         importSVG() {
             svgEditor?.importSVG(this.svgpath)
+            svgEditor!.ifSend = 1
         },
         exportSVG() {
             svgEditor?.exportSVG()
@@ -134,7 +150,9 @@ export default defineComponent({
         addTriangle() {
             svgEditor?.setTool('addTriangle')
         },
-        
+        ruler(){
+            svgEditor?.setTool('ruler')
+        },
         send() {
             const svgPath = this.svgpath;
 
@@ -260,6 +278,34 @@ export default defineComponent({
                 this.showInputBox = svgEditor?.ifMarked!
                 this.showInputBox2 = svgEditor?.ifMarkedCanvas!
                 this.markedId = svgEditor?.markedId!
+                this.pointPos = svgEditor!.pointPos
+                if(this.pointPos){
+                    let posSegment = svgEditor!.posSegment
+                    this.pointx1 = posSegment[0]
+                    this.pointy1 = posSegment[1]
+                }
+                this.linePos = svgEditor!.linePos
+                if(this.linePos){
+                    let posSegment = svgEditor!.posSegment
+                    this.pointx1 = posSegment[0]
+                    this.pointy1 = posSegment[1]
+                    this.pointx2 = posSegment[2]
+                    this.pointy2 = posSegment[3]
+                    this.length1 = posSegment[4]
+                    this.angle1 = posSegment[5]
+                }
+                this.curvePos = svgEditor!.curvePos
+                if(this.curvePos){
+                    let posSegment = svgEditor!.posSegment
+                    this.pointx1 = posSegment[0]
+                    this.pointy1 = posSegment[1]
+                    this.pointx2 = posSegment[2]
+                    this.pointy2 = posSegment[3]
+                    this.length1 = posSegment[4]
+                    this.length2 = posSegment[5]
+                    this.angle1 = posSegment[6]
+                    this.angle2 = posSegment[7]
+                }
                 // this.showCommentBox = svgEditor?.isMarked!
                 // if(this.showCommentBox){
                 //     this.comment = svgEditor!.showComment(this.markedId)!

@@ -64,14 +64,18 @@ export default class SvgEditor {
     private _textPoint: Point = new Point;
 
     private _svgMinX: number = 0;
-    private _svgMaxX: number = 0;
+    private _svgMaxX: number = 10;
     private _svgMinY: number = 0;
-    private _svgMaxY: number = 0;
+    private _svgMaxY: number = 10;
 
-    private _bufferMinX: number = 0;
-    private _bufferMinY: number = 0;
-    private _bufferMaxX: number = 0;
-    private _bufferMaxY: number = 0;
+    private _pointPos: boolean = false
+    private _linePos: boolean = false
+    private _curvePos: boolean = false
+    private _posSegment: Array<number> = []
+    // private _bufferMinX: number = 0;
+    // private _bufferMinY: number = 0;
+    // private _bufferMaxX: number = 0;
+    // private _bufferMaxY: number = 0;
 
     private _isRect: boolean = false;
     private _isTri: boolean = false;
@@ -169,8 +173,8 @@ export default class SvgEditor {
     public transSVG(): Array<any> {
         if (this._currentTool != 'editor') { this.saveSVG() }
         let allSegements = []
-        let minmax = [this._svgMinX, this._svgMinY, this._svgMaxX, this._svgMaxY, this._bufferMinX, this._bufferMinY, this._bufferMaxX, this._bufferMaxY]
-        allSegements.push(minmax)
+        // let minmax = [this._svgMinX, this._svgMinY, this._svgMaxX, this._svgMaxY, this._bufferMinX, this._bufferMinY, this._bufferMaxX, this._bufferMaxY]
+        // allSegements.push(minmax)
         for (let element of this._gui!.guiBaseElements.values()) {
 
             let lines = []
@@ -337,17 +341,17 @@ export default class SvgEditor {
         }
         this._gui!.guiElementIndex = 0
         // console.log("deleteMAP?????", this._gui!.guiBaseElements)
-        this._svgMinX = allSegements[0][0]
-        this._svgMinY = allSegements[0][1]
-        this._svgMaxX = allSegements[0][2]
-        this._svgMaxY = allSegements[0][3]
-        this._bufferMinX = allSegements[0][4]
-        this._bufferMinY = allSegements[0][5]
-        this._bufferMaxX = allSegements[0][6]
-        this._bufferMaxY = allSegements[0][7]
+        // this._svgMinX = allSegements[0][0]
+        // this._svgMinY = allSegements[0][1]
+        // this._svgMaxX = allSegements[0][2]
+        // this._svgMaxY = allSegements[0][3]
+        // this._bufferMinX = allSegements[0][4]
+        // this._bufferMinY = allSegements[0][5]
+        // this._bufferMaxX = allSegements[0][6]
+        // this._bufferMaxY = allSegements[0][7]
 
         console.log(this._svgMinX)
-        for (let i = 1; i < allSegements.length; i++) {
+        for (let i = 0; i < allSegements.length; i++) {
             this.renderOneSegment(allSegements[i])
         }
         for (let i = 0; i < allComments.length; i++) {
@@ -440,6 +444,38 @@ export default class SvgEditor {
 
     set markedId(markedId: number) {
         this._markedId = markedId
+    }
+
+    get pointPos(): boolean {
+        return this._pointPos
+    }
+
+    set pointPos(pointPos: boolean) {
+        this._pointPos = pointPos
+    }
+
+    get linePos(): boolean {
+        return this._linePos
+    }
+
+    set linePos(linePos: boolean) {
+        this._linePos = linePos
+    }
+
+    get curvePos(): boolean {
+        return this._curvePos
+    }
+
+    set curvePos(curvePos: boolean) {
+        this._curvePos = curvePos
+    }
+
+    get posSegment(): Array<number> {
+        return this._posSegment
+    }
+
+    set posSegment(posSegment: Array<number>) {
+        this._posSegment = posSegment
     }
 
     get currentTool(): string {
@@ -538,6 +574,15 @@ export default class SvgEditor {
         if (eventType == 'pointerdown') {
             if (isPrimary(e)) this._isPointerDown.primary = true
             else this._isPointerDown.secondary = true
+            if (this._currentTool != 'ruler') {
+                this._pointPos = false
+                this._linePos = false
+                this._curvePos = false
+            }
+            this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.x = 0
+            this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.y = 0
+            this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.x = 0
+            this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.y = 0
             if (this._currentTool == 'editor') {
                 console.log("EDITOR MODE")
                 if (!e.ctrlKey) {
@@ -1157,13 +1202,140 @@ export default class SvgEditor {
                 this._gui!.multiSelectingTri!.baseBufferElement.center.x = this._circlePos.x1
                 this._gui!.multiSelectingTri!.baseBufferElement.center.y = this._circlePos.y1
             }
+            else if (this._currentTool == 'ruler') {
+                console.log("ruler MODE")
+                if (isDecoratedShape(target!)) { //选中元素了
+                    for (let element of this._gui!.selectedElements.values()) {
+                        element.isSelected = false
+                    }
+                    target.guiElement.isSelected = true
+
+                    if (target.guiElement instanceof GUIOnPoint) {
+                        this._posSegment = []
+                        this._posSegment.push(target.guiElement!.baseBufferElement.center.x)
+                        this._posSegment.push(target.guiElement!.baseBufferElement.center.y)
+                        this._pointPos = true
+                        this._linePos = false
+                        this._curvePos = false
+                    }
+                    else if (target.guiElement instanceof GUILine) {
+                        this._posSegment = []
+                        let x1 = target.guiElement.previousGUIPoint!.baseBufferElement.center.x
+                        let y1 = target.guiElement.previousGUIPoint!.baseBufferElement.center.y
+                        let x2 = target.guiElement.nextGUIPoint!.baseBufferElement.center.x
+                        let y2 = target.guiElement.nextGUIPoint!.baseBufferElement.center.y
+                        let l = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+                        let a = Math.round(Math.asin(Math.abs(y1 - y2) / l) / Math.PI * 180)
+                        this._posSegment.push(x1)
+                        this._posSegment.push(y1)
+                        this._posSegment.push(x2)
+                        this._posSegment.push(y2)
+                        this._posSegment.push(l)
+                        this._posSegment.push(a)
+
+                        this._pointPos = false
+                        this._linePos = true
+                        this._curvePos = false
+                    }
+                    else if (target.guiElement instanceof GUICubicCurve) {
+                        this._posSegment = []
+                        let x1 = target.guiElement.previousGUIPoint!.baseBufferElement.center.x
+                        let y1 = target.guiElement.previousGUIPoint!.baseBufferElement.center.y
+                        let x2 = target.guiElement.nextGUIPoint!.baseBufferElement.center.x
+                        let y2 = target.guiElement.nextGUIPoint!.baseBufferElement.center.y
+                        let cx1 = target.guiElement.previousGUIPoint!.nextControlPoint!.baseBufferElement.center.x
+                        let cy1 = target.guiElement.previousGUIPoint!.nextControlPoint!.baseBufferElement.center.y
+                        let cx2 = target.guiElement.nextGUIPoint!.previousControlPoint!.baseBufferElement.center.x
+                        let cy2 = target.guiElement.nextGUIPoint!.previousControlPoint!.baseBufferElement.center.y
+                        let l1 = Math.sqrt((x1 - cx1) * (x1 - cx1) + (y1 - cy1) * (y1 - cy1))
+                        let l2 = Math.sqrt((x2 - cx2) * (x2 - cx2) + (y2 - cy2) * (y2 - cy2))
+                        let a1 = Math.round(Math.asin(Math.abs(y1 - cy1) / l1) / Math.PI * 180)
+                        let a2 = Math.round(Math.asin(Math.abs(y2 - cy2) / l2) / Math.PI * 180)
+                        this._posSegment.push(x1)
+                        this._posSegment.push(y1)
+                        this._posSegment.push(x2)
+                        this._posSegment.push(y2)
+                        this._posSegment.push(l1)
+                        this._posSegment.push(l2)
+                        this._posSegment.push(a1)
+                        this._posSegment.push(a2)
+                        this._pointPos = false
+                        this._linePos = false
+                        this._curvePos = true
+                    }
+
+                    this._isSelecting = false
+                    this._isDragging = false
+                    this._isRect = false
+                    this._isCir = false
+                    this._isTri = false
+
+                } else {
+                    //选中画布了
+                    // console.log("二、选中画布了，停止拖拽元素操作,清空所有元素并开始框选行为")
+                    let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                    let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+
+                    for (let element of this._gui!.selectedElements.values()) {
+                        element.isSelected = false
+                    }
+
+
+                    this._posSegment = []
+                    let x1 = bufferX
+                    let y1 = bufferY
+                    let x2 = bufferX
+                    let y2 = bufferY
+                    let l = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+                    // let a = Math.round(Math.asin(Math.abs(y1 - y2) / l) / Math.PI * 180)
+                    let a = 0
+                    this._posSegment.push(x1)
+                    this._posSegment.push(y1)
+                    this._posSegment.push(x2)
+                    this._posSegment.push(y2)
+                    this._posSegment.push(l)
+                    this._posSegment.push(a)
+                    this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.x = bufferX
+                    this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.y = bufferY
+                    this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.x = bufferX
+                    this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.y = bufferY
+                    this._isDragging = false
+                    this._isSelecting = true
+                    this._isRect = false
+                    this._isCir = false
+                    this._isTri = false
+                    this._pointPos = false
+                    this._linePos = true
+                    this._curvePos = false
+                }
+            }
             else if (this._currentTool == 'test') {
                 console.log("TEST")
             }
 
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
         } else if (eventType == 'pointermove') {
-            if (this._isSelecting || this._isRect) {
+            if (this._isSelecting && this._linePos) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.x = bufferX
+                this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.y = bufferY
+                let x1 = this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.x
+                let y1 = this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.y
+                let x2 = bufferX
+                let y2 = bufferY
+                let l = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+                let a = 0
+                if(l!=0){
+                    a = Math.round(Math.asin(Math.abs(y1 - y2) / l) / Math.PI * 180)
+                }
+                
+                this._posSegment[2] = bufferX
+                this._posSegment[3] = bufferY
+                this._posSegment[4] = l
+                this._posSegment[5] = a
+            }
+            else if (this._isSelecting || this._isRect) {
                 // console.log("正在拖动——")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -1916,37 +2088,37 @@ export default class SvgEditor {
         let bufferMaxX = baseBuffer.maxX - bufferWidth / 3;
         let bufferMaxY = baseBuffer.maxY - bufferHeight / 3;
 
-        this._bufferMinX = bufferMinX
-        this._bufferMinY = bufferMinY
-        this._bufferMaxX = bufferMaxX
-        this._bufferMaxY = bufferMaxY
+        // this._bufferMinX = bufferMinX
+        // this._bufferMinY = bufferMinY
+        // this._bufferMaxX = bufferMaxX
+        // this._bufferMaxY = bufferMaxY
 
-        let minX = 1e7;
-        let minY = 1e7;
-        let maxX = -1e7;
-        let maxY = -1e7;
+        // let minX = 1e7;
+        // let minY = 1e7;
+        // let maxX = -1e7;
+        // let maxY = -1e7;
         for (let i = 0; i < segments.length; i++) {
             let command = segments[i][0]
             if (command == 'M') {
                 startPointX = segments[i][1]
                 startPointY = segments[i][2]
-                if (startPointX < minX) minX = startPointX
-                if (startPointY < minY) minY = startPointY
-                if (startPointX > maxX) maxX = startPointX
-                if (startPointY > maxY) maxY = startPointY
+                // if (startPointX < minX) minX = startPointX
+                // if (startPointY < minY) minY = startPointY
+                // if (startPointX > maxX) maxX = startPointX
+                // if (startPointY > maxY) maxY = startPointY
             } else if (command == 'C') {
-                if (segments[i][1] < minX) minX = segments[i][1]
-                if (segments[i][2] < minY) minY = segments[i][2]
-                if (segments[i][1] > maxX) maxX = segments[i][1]
-                if (segments[i][2] > maxY) maxY = segments[i][2]
-                if (segments[i][3] < minX) minX = segments[i][3]
-                if (segments[i][4] < minY) minY = segments[i][4]
-                if (segments[i][3] > maxX) maxX = segments[i][3]
-                if (segments[i][4] > maxY) maxY = segments[i][4]
-                if (segments[i][5] < minX) minX = segments[i][5]
-                if (segments[i][6] < minY) minY = segments[i][6]
-                if (segments[i][5] > maxX) maxX = segments[i][5]
-                if (segments[i][6] > maxY) maxY = segments[i][6]
+                // if (segments[i][1] < minX) minX = segments[i][1]
+                // if (segments[i][2] < minY) minY = segments[i][2]
+                // if (segments[i][1] > maxX) maxX = segments[i][1]
+                // if (segments[i][2] > maxY) maxY = segments[i][2]
+                // if (segments[i][3] < minX) minX = segments[i][3]
+                // if (segments[i][4] < minY) minY = segments[i][4]
+                // if (segments[i][3] > maxX) maxX = segments[i][3]
+                // if (segments[i][4] > maxY) maxY = segments[i][4]
+                // if (segments[i][5] < minX) minX = segments[i][5]
+                // if (segments[i][6] < minY) minY = segments[i][6]
+                // if (segments[i][5] > maxX) maxX = segments[i][5]
+                // if (segments[i][6] > maxY) maxY = segments[i][6]
                 lines.push(segments[i])
                 if (i == segments.length - 1 || segments[i + 1][0] == 'M') {
                     //该段最后一个点
@@ -1964,12 +2136,12 @@ export default class SvgEditor {
                 }
             }
         }
-        console.log("minX, maxX, minY, maxY", minX, maxX, minY, maxY)
+        // console.log("minX, maxX, minY, maxY", minX, maxX, minY, maxY)
         console.log("allSegements", allSegements)
-        this._svgMinX = minX
-        this._svgMaxX = maxX
-        this._svgMinY = minY
-        this._svgMaxY = maxY
+        let minX = this._svgMinX
+        let maxX = this._svgMaxX
+        let minY = this._svgMinY
+        let maxY = this._svgMaxY
 
         let newSegments = []
         for (let i = 0; i < allSegements.length; i++) {
