@@ -32,10 +32,10 @@
 				<div class="right">
 					<el-row :gutter="0" style="margin-right:0; width:200px;">
 						<el-col :span="6" v-for="name in nameList" :key="name" style="display: flex; align-items: center; justify-content: center; min-width:28px;">
-							<el-avatar :size="28">{{ name }}</el-avatar>
+							<el-avatar :style="{ 'background-color': extractColorByName(name) }" :size="28">{{ name }}</el-avatar>
 						</el-col>
 						<el-col :span="6" style="display: flex; align-items: center; border-left: 1px solid var(--el-border-color); padding-left: 12px; min-width:44px;">
-							<el-avatar :size="32" :src="circleUrl">Xu</el-avatar>
+							<el-avatar :style="{ 'background-color': extractColorByName('Xu') }" :size="32" :src="circleUrl">Xu</el-avatar>
 						</el-col>
 					</el-row>
 				</div>
@@ -46,7 +46,40 @@
 				<div class="left-sidebar" :class="isLayerout ? 'show' : 'hide'">
 					<!--图层面板-->
 					<div class="layer-panel">
-						图层面板
+						<div style="margin: 10px; text-align: left; font-size: 16px;">
+							<b>任务</b>
+						</div>
+						<div class="task-tree">
+							<el-tree style="background-color: #EAEAEA; "
+									 :data="tasktreedata"
+									 :props="defaultProps"
+									 default-expand-all
+									 highlight-current
+									 :expand-on-click-node="false" />
+						</div>
+						<div style="margin: 10px; text-align: left; font-size: 16px;">
+							<b>图层</b>
+						</div>
+						<div class="layer-tree">
+							<el-tree style="background-color: #EAEAEA; "
+									 :data="layertreedata"
+									 :props="defaultProps"
+									 node-key="id"
+									 default-expand-all									 
+									 highlight-current
+									 :expand-on-click-node="false">
+								<template #default="{ node, data }">
+									<span class="custom-tree-node">
+										<span>{{ node.label }}</span>
+										<span>
+											<el-button style="right:10px" v-if="data.id === 1" type="text" circle  size="mini" @click="addNode(node, data)"><el-icon class="el-icon--small"><Plus /></el-icon></el-button>
+											<el-button v-if="data.id !== 1" type="text" circle size="mini" @click="hideNode(node, data)"><el-icon class="el-icon--small"><View /></el-icon></el-button>
+											<el-button v-if="data.id !== 1" style="margin:0px;" type="text" circle size="mini" @click="removeNode(node, data)"><el-icon class="el-icon--small"><Delete /></el-icon></el-button>
+										</span>
+										</span>
+								</template>
+							</el-tree>
+						</div>
 					</div>
 					<!--按钮栏-->
 					<div class="button-container">
@@ -74,9 +107,9 @@
 									</el-button>
 									<template #dropdown>
 										<el-dropdown-menu>
-											<el-dropdown-item @click.native="">矩形</el-dropdown-item>
-											<el-dropdown-item @click.native="">圆形</el-dropdown-item>
-											<el-dropdown-item @click.native="">三角形</el-dropdown-item>
+											<el-dropdown-item @click.native="addRectangle">矩形</el-dropdown-item>
+											<el-dropdown-item @click.native="addCircle">圆形</el-dropdown-item>
+											<el-dropdown-item @click.native="addTriangle">三角形</el-dropdown-item>
 										</el-dropdown-menu>
 									</template>
 								</el-dropdown>
@@ -141,32 +174,32 @@
 			<!--右侧边栏-->
 			<aside class="right-sidebar">
 				<div class="rsidebar-top">
-					<div style="margin: 0 0 20px; text-align: left; font-size: 16px;">
+					<div style="margin: 0 0 5px; text-align: left; font-size: 16px;">
 						<b>讨论</b>
 					</div>
 					<div v-for="item in list" :key="item.gui_id">
 						<div :class="(item.gui_id == markedId && showInputBox == true)? 'back-edit' : 'back-normal'" @mouseenter="markShow(item.gui_id)" @mouseleave="markHide(item.gui_id)">
-								<div>
-									元素编号：{{ item.gui_id }}<br />
-									标注：{{ item.gui_mark }}
-								</div>
-								<div style="margin-top:5px;">
-									<el-button type="primary" size="small" circle @click="editComment(item.gui_id)">
-										<el-icon class="el-icon--small">
-											<edit />
-										</el-icon>
-									</el-button>
-									<el-button type="danger" size="small" circle @click="deleteComment(item.gui_id)" >
+							<div>
+								<!--元素编号：{{ item.gui_id }}<br />-->
+								{{ item.gui_mark }}
+							</div>
+							<div style="margin-top:5px;">
+								<el-button type="primary" size="small" circle @click="editComment(item.gui_id)">
+									<el-icon class="el-icon--small">
+										<edit />
+									</el-icon>
+								</el-button>
+								<el-button type="danger" size="small" circle @click="deleteComment(item.gui_id)">
 									<el-icon class="el-icon--small">
 										<delete />
 									</el-icon>
-									</el-button>
-								</div>
+								</el-button>
+							</div>
 						</div>
 					</div>
 				</div>
 				<div class="rsidebar-bottom">
-					<div style="margin: 10px 0 30px; text-align: left; font-size: 16px;"><b>按钮</b></div>
+					<div style="margin: 10px 0 10px; text-align: left; font-size: 16px;"><b>按钮</b></div>
 					<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
 					<el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
 				</div>
@@ -190,7 +223,7 @@
 </template>
 
 <script lang="ts">
-	import { ArrowDown,Delete,Edit, } from '@element-plus/icons-vue'
+	import { ArrowDown, Delete, Edit, Plus,View } from '@element-plus/icons-vue'
 	import { defineComponent, ref, onMounted } from 'vue'
 	import { ElScrollbar } from 'element-plus'
 	import SvgEditor from '../lib/svg-editor/SvgEditor'
@@ -198,7 +231,7 @@
 	import router from '@/router'
 	const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 	let svgEditor: SvgEditor | undefined
-
+	let idcount = 10
 	const ws = new WebSocket('ws://localhost:8000');
 
 	export default defineComponent({
@@ -207,11 +240,13 @@
 			ArrowDown,
 			Delete,
 			Edit,
+			Plus,
+			View,
 		},
 
 		data() {
 			return {
-				nameList: ['小张', '小明', '小华'],
+				nameList: ['小明', 'Li', '华'],
 				isLayerout: false,
 
 				showInputBox: false,
@@ -243,6 +278,93 @@
 				list: [] as any,
 				marklist: [] as any,
 
+				defaultProps: {
+					children: 'children',
+					label: 'label',
+				},
+				layertreedata: [
+					{
+						id: 1,
+						label: '图层',
+						children: [
+							{
+								id: 2,
+								label: 'Regular',
+								children: []
+							},
+							{
+								id: 3,
+								label: 'Bold',
+								children: []
+							},
+							{
+								id: 4,
+								label: 'Light',
+								children: []
+							},
+						]
+					}
+				],
+
+				tasktreedata: [
+					{
+						id: 1,
+						label: '中文',
+						children: [
+							{
+								id: 3,
+								label: '十二模板字',
+								children: [
+									{
+										id: 8,
+										label: '今',
+									},
+									{
+										id: 9,
+										label: '我',
+									},
+									{
+										id: 10,
+										label: '大',
+									},
+								],
+							},
+							{
+								id: 4,
+								label: 'GB2312-80',
+								children: [
+									{
+										id: 11,
+										label: '组一 （1/30）',
+									},
+									{
+										id: 12,
+										label: '组二 （0/30）',
+									},
+								],
+							},
+						],
+
+					},
+					{
+						id: 2,
+						label: '西文字符',
+						children: [
+							{
+								id: 5,
+								label: '拉丁字母',
+							},
+							{
+								id: 6,
+								label: '拉丁数字',
+							},
+							{
+								id: 7,
+								label: '符号',
+							},
+						],
+					},
+				]
 			}
 		},
 		mounted() {
@@ -262,6 +384,15 @@
 		methods: {
 			toggleLayer() {
 				this.isLayerout = !this.isLayerout
+			},
+			//由用户名字生成颜色
+			extractColorByName(name:any) {
+				var temp = [];
+				temp.push("#");
+				for (let index = 0; index < name.length; index++) {
+					temp.push(parseInt(name[index].charCodeAt(0), 10).toString(16));
+				}
+				return temp.slice(0, 5).join('').slice(0, 4);
 			},
 			importSVG() {
 				svgEditor?.importSVG(this.svgpath)
@@ -289,6 +420,15 @@
 			},
 			deletePoint() {
 				svgEditor?.setTool('deletePoint')
+			},
+			addRectangle() {
+				svgEditor?.setTool('addRectangle')
+			},
+			addCircle() {
+				svgEditor?.setTool('addCircle')
+			},
+			addTriangle() {
+				svgEditor?.setTool('addTriangle')
 			},
 			deleteMark() {
 				svgEditor?.setTool('deleteMark')
@@ -402,6 +542,26 @@
 			markHide(id: number) {
 				svgEditor!.unMark(id)
 			},
+			//图层管理
+
+			addNode(node: any, data: any) {
+				// 添加子节点
+				data.children.push({
+					id: idcount++,
+					label: `图层 ${data.children.length + 1}`,
+					children: []
+				});
+			},
+			removeNode(node: any, data: any) {
+				// 删除子节点
+				const parent = node.parent;
+				parent.data.children = parent.data.children.filter((child: any) => child.id !== data.id);
+			},
+			hideNode(node: any, data: any) {
+				// 隐藏子节点
+				data.hidden = true;
+			},
+
 			handleWsOpen(e: any) {
 				console.log('FE:WebSocket:open', e)
 			},
@@ -506,7 +666,7 @@
 		font-size: 16px;
 	}
 
-	.main .el-button {
+	.button-container .el-button {
 		width: 45px;
 		height: 45px;
 		border-radius: 10px;
@@ -545,10 +705,10 @@
 	}
 
 	#canvas {
-			position: absolute;
-			width: 100%;
-			height: calc(100vh - 52px);
-			touch-action: none;
-			user-select: none;
-		}
+		position: absolute;
+		width: 100%;
+		height: calc(100vh - 52px);
+		touch-action: none;
+		user-select: none;
+	}
 </style>
