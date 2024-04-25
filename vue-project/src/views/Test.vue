@@ -132,7 +132,7 @@
 									</template>
 								</el-dropdown>
 								<!--测量按钮-->
-								<el-button type="plain">
+								<el-button type="plain" @click="ruler">
 									<svg-icon style=" width: 30px; height: 30px;" name="celiang" />
 								</el-button>
 							</el-button-group>
@@ -200,6 +200,14 @@
 						</div>
 					</div>
 				</div>
+                <div class="rsidebar-main">
+                    <div style="margin: 5px 0 5px; text-align: left; font-size: 16px;">
+                        <b>信息</b>
+                    </div>
+                    <div v-if="pointPos">点的坐标<br />  x: {{ formatNumber(pointx1) }}, y:{{ formatNumber(pointy1) }}</div>
+                    <div v-if="linePos">直线的两点坐标<br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }}); <br /> (x2: {{ formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }}); <br /> 直线的长度 : {{ formatNumber(length1) }} ; <br /> 线的角度: {{ angle1 }}度</div>
+                    <div v-if="curvePos">曲线的两点坐标 <br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }});<br />  (x2: {{formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }});<br />  控制线长度：{{ formatNumber(length1) }} ; {{ formatNumber(length2) }} ;<br />  线的角度: {{ angle1 }} 度; {{ angle2 }}度</div>
+                </div>
 				<div class="rsidebar-bottom">
 					<div style="margin: 10px 0 10px; text-align: left; font-size: 16px;"><b>按钮</b></div>
 					<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
@@ -279,7 +287,17 @@
 				comment: "1",
 				list: [] as any,
 				marklist: [] as any,
-
+                pointPos: false,
+                linePos: false,
+                curvePos: false,
+                pointx1: 0,
+                pointx2: 0,
+                pointy1: 0,
+                pointy2: 0,
+                length1: 0,
+                length2: 0,
+                angle1: 0,
+                angle2: 0,
 				defaultProps: {
 					children: 'children',
 					label: 'label',
@@ -386,7 +404,11 @@
 		methods: {
 			toggleLayer() {
 				this.isLayerout = !this.isLayerout
-			},
+            },
+            formatNumber(num: any) {
+                // Keep 2 decimal places
+                return parseFloat(num).toFixed(2);
+            },
 			//由用户名字生成颜色
 			extractColorByName(name:any) {
 				var temp = [];
@@ -405,9 +427,9 @@
 			test() {
 				svgEditor?.test()
 			},
-			backtest() {
-				svgEditor?.backtest()
-			},
+			//backtest() {
+			//	svgEditor?.backtest()
+			//},
 			move() {
 				svgEditor?.setTool('move')
 			},
@@ -440,7 +462,10 @@
 			},
 			mergePoint() {
 				svgEditor?.setTool('mergePoint')
-			},
+            },
+            ruler() {
+                svgEditor?.setTool('ruler')
+            },
 			send() {
 				const svgPath = this.svgpath;
 
@@ -640,7 +665,35 @@
 					this.showInputBox = svgEditor?.ifMarked!
 					this.showInputBox2 = svgEditor?.ifMarkedCanvas!
 					this.mouseTextPos = svgEditor?.textPoint!
-					this.markedId = svgEditor?.markedId!
+                    this.markedId = svgEditor?.markedId!
+                    this.pointPos = svgEditor!.pointPos
+                    if (this.pointPos) {
+                        let posSegment = svgEditor!.posSegment
+                        this.pointx1 = posSegment[0]
+                        this.pointy1 = posSegment[1]
+                    }
+                    this.linePos = svgEditor!.linePos
+                    if (this.linePos) {
+                        let posSegment = svgEditor!.posSegment
+                        this.pointx1 = posSegment[0]
+                        this.pointy1 = posSegment[1]
+                        this.pointx2 = posSegment[2]
+                        this.pointy2 = posSegment[3]
+                        this.length1 = posSegment[4]
+                        this.angle1 = posSegment[5]
+                    }
+                    this.curvePos = svgEditor!.curvePos
+                    if (this.curvePos) {
+                        let posSegment = svgEditor!.posSegment
+                        this.pointx1 = posSegment[0]
+                        this.pointy1 = posSegment[1]
+                        this.pointx2 = posSegment[2]
+                        this.pointy2 = posSegment[3]
+                        this.length1 = posSegment[4]
+                        this.length2 = posSegment[5]
+                        this.angle1 = posSegment[6]
+                        this.angle2 = posSegment[7]
+                    }
 					// this.showCommentBox = svgEditor?.isMarked!
 					// if(this.showCommentBox){
 					//     this.comment = svgEditor!.showComment(this.markedId)!
