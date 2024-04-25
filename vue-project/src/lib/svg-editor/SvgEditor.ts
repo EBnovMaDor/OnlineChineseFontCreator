@@ -63,8 +63,8 @@ export default class SvgEditor {
     private _markPoint: Point = new Point;
     private _textPoint: Point = new Point;
 
-    private _svgMinX: number = 0;
-    private _svgMaxX: number = 10;
+    private _svgMinX: number = -5;
+    private _svgMaxX: number = 5;
     private _svgMinY: number = 0;
     private _svgMaxY: number = 10;
 

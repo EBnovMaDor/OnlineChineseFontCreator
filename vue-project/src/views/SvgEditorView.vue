@@ -74,7 +74,7 @@ export default defineComponent({
             guiHeight: 0,
             currentTool: "move",
             svgEditor: undefined as SvgEditor | undefined,
-            svgpath: 'M 0 0 M 3 1 M 3 0 C 3.6667 0 4.3333 0 6 0 L 6 1 M 4 2 L 8 1 Q 10 3 7 3 Q 5 5 3 4 C 2 4 1 4 0 2 Z M 9 5 L 3 7 L 5 9 L 9 5',
+            svgpath: 'M 0 0 L 4 0 L 4 -1 L 0 -1 L 0 -3.5 L -1 -3.5 L -1 -1 L -5 -1 L -5 0 L -1 0 C -1.5 2 -3 4 -5 5.5 L -4.5 6 C -2.5 4.5 -1 2.5 -0.5 1 C 0 2.5 1.5 4.5 3.5 6 L 4 5.5 C 2 4 0.5 2 0 0',
             username: '',
             ifSend: 0,
             markedId: -1,
