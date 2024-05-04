@@ -28,6 +28,7 @@ import type GUIElement from './gui-element/interface/GUIBaseElement';
 import GUIControlLine from './gui-element/gui-base-elements/GUIControlLine';
 import GUICubicCurve from './gui-element/gui-base-elements/GUICubicCurve';
 import GUIStraightLine from './gui-element/gui-base-elements/GUIStraightLine';
+import GUIMarkLine from './gui-element/gui-base-elements/GUIMarkLine';
 import { instanceOfGUILine } from './util/InstanceHelper';
 import BaseBufferRect from './base-buffer-element/BaseBufferRect';
 import type GUIBaseElement from './gui-element/interface/GUIBaseElement';
@@ -38,6 +39,8 @@ import GUIClosedPath from './gui-element/gui-base-elements/GUIClosedPath';
 import BaseBufferClosedPolygon from './base-buffer-element/BaseBufferClosedPolygon';
 import { el } from 'element-plus/es/locales.mjs';
 import GUIText from './gui-element/gui-base-elements/GUIText';
+import BaseBufferRing from './base-buffer-element/BaseBufferRing';
+import GUIRing from './gui-element/gui-base-elements/GUIRing';
 
 const isFingerOrMouse = (e: PointerEvent) => e.pointerType == 'touch' || e.pointerType == 'mouse'
 const isFinger = (e: PointerEvent) => e.pointerType == 'touch'
@@ -63,23 +66,20 @@ export default class SvgEditor {
     private _markPoint: Point = new Point;
     private _textPoint: Point = new Point;
 
-    private _svgMinX: number = -5;
-    private _svgMaxX: number = 5;
+    private _svgMinX: number = -7.5;
+    private _svgMaxX: number = 7.5;
     private _svgMinY: number = 0;
-    private _svgMaxY: number = 10;
+    private _svgMaxY: number = 15;
 
     private _pointPos: boolean = false
     private _linePos: boolean = false
     private _curvePos: boolean = false
     private _posSegment: Array<number> = []
-    // private _bufferMinX: number = 0;
-    // private _bufferMinY: number = 0;
-    // private _bufferMaxX: number = 0;
-    // private _bufferMaxY: number = 0;
 
     private _isRect: boolean = false;
     private _isTri: boolean = false;
     private _isCir: boolean = false;
+    private _isLineMark: boolean = false;
 
     private _multiSelectingRectPos: {
         x1: number,
@@ -171,6 +171,14 @@ export default class SvgEditor {
     }
 
     public transSVG(): Array<any> {
+        for (let element of this._gui!.selectedElements.values()) {
+            element.isSelected = false
+        }
+        console.log("transSVG", this._multiSelectingRectPos.x1, this._multiSelectingRectPos.y1)
+        this._gui!.selectedElementsRect!.baseBufferElement.width = 0
+        this._gui!.selectedElementsRect!.baseBufferElement.height = 0
+        console.log("transSVG", this._multiSelectingRectPos.x1, this._multiSelectingRectPos.y1)
+
         if (this._currentTool != 'editor') { this.saveSVG() }
         let allSegements = []
         // let minmax = [this._svgMinX, this._svgMinY, this._svgMaxX, this._svgMaxY, this._bufferMinX, this._bufferMinY, this._bufferMaxX, this._bufferMaxY]
@@ -359,7 +367,7 @@ export default class SvgEditor {
 
     public transCmt(): Array<any> {
         let allComments = []
-        console.log("this._gui!.guiBaseElements",this._gui!.guiBaseElements)
+        console.log("this._gui!.guiBaseElements", this._gui!.guiBaseElements)
         for (let element of this._gui!.guiBaseElements.values()) {
             if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIControlLine) {
                 if (element.comment != "") {
@@ -563,7 +571,7 @@ export default class SvgEditor {
 
     private dragElements(e: PointerEvent, isFinal: boolean = false): void {
         if (this._gui!.selectedElements.size != 0
-            && (this._currentTool == 'editor' || this._currentTool == 'addStraightLine' || this._currentTool == 'addCurve' || this._currentTool == 'test')
+            && (this._currentTool == 'editor' || this._currentTool == 'addStraightLine' || this._currentTool == 'addCurve' || this._currentTool == 'shapeMark')
             && this._isDragging
             && this._isPointerDown.primary
             && this._lastEvent.primary
@@ -620,149 +628,80 @@ export default class SvgEditor {
                 this._linePos = false
                 this._curvePos = false
             }
+            this._isRect = false
+            this._isCir = false
+            this._isTri = false
+            this._isLineMark = false
             this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.x = 0
             this._gui!.multiSelectingLine!.baseBufferElement.attributes.point1.y = 0
             this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.x = 0
             this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.y = 0
             if (this._currentTool == 'editor') {
-                console.log("EDITOR MODE")
                 if (!e.ctrlKey) {
-                    // console.log("NO CTRL MODE")
-                    //首先判断是否选中元素了
-                    if (isDecoratedShape(target!)) { //选中元素了
-                        // console.log("一、选中元素了")
-                        //判断上下文，是否先前已经选中多个元素
+                    if (isDecoratedShape(target!)) {
                         if (this._gui!.selectedElements.size == 0) {
-                            // console.log("1、先前没有选中任何元素,新增元素")
                             target.guiElement.isSelected = true
-                            console.log("当前选中的元素：", target.guiElement)
-                            // if (target.guiElement.comment != "") {
-                            //     this._isMarked = true
-                            //     this._markedId = target.guiElement.guiElementId
-                            // }
-                            // else {
-                            //     this._isMarked = false
-                            // }
                         } else if (this._gui!.selectedElements.size == 1) {
-                            // console.log("2、先前选中单个元素")
                             if (this._gui!.selectedElements.has(target.guiElement.guiElementId)) {
-                                // console.log("1）当前选的元素等于先前选的元素，无变换 Finish")
                             } else {
-                                // console.log("2）当前选的元素不等于先前选的元素 清空元素并新增 Finish")
-                                //重置selected中元素的isSelected为False
                                 for (let element of this._gui!.selectedElements.values()) {
                                     element.isSelected = false
                                 }
                                 target.guiElement.isSelected = true
-                                // console.log("当前选中的元素：", target.guiElement)
                             }
-                            // if (target.guiElement.comment != "") {
-                            //     this._isMarked = true
-                            //     this._markedId = target.guiElement.guiElementId
-                            // }
-                            // else {
-                            //     this._isMarked = false
-                            // }
                         } else if (this._gui!.selectedElements.size > 1) {
-                            // console.log("3、先前选中多个元素")
                             if (this._gui!.selectedElements.has(target.guiElement.guiElementId)) {
-                                //已经选中了，且是多选，所以开启拖拽操作
-                                // console.log("1）当前选的元素是先前选的元素中的一个")
                             } else {
-                                //重置selected中所有元素的isSelected为False
-                                // console.log("2）当前选的元素不是先前选的元素中的一个，清空元素并新增 Finish")
-                                //重置selected中元素的isSelected为False
                                 for (let element of this._gui!.selectedElements.values()) {
                                     element.isSelected = false
                                 }
                                 target.guiElement.isSelected = true
-                                // console.log("当前选中的元素：", target.guiElement)
-                                // if (target.guiElement.comment != "") {
-                                //     this._isMarked = true
-                                //     this._markedId = target.guiElement.guiElementId
-                                // }
-                                // else {
-                                //     this._isMarked = false
-                                // }
                             }
                         }
                         this._isSelecting = false
                         this._isDragging = true
-                        this._isRect = false
-                        this._isCir = false
-                        this._isTri = false
-
                     } else {
-                        //选中画布了
-                        // console.log("二、选中画布了，停止拖拽元素操作,清空所有元素并开始框选行为")
                         let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                         let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
-
                         for (let element of this._gui!.selectedElements.values()) {
                             element.isSelected = false
                         }
                         this._isDragging = false
                         this._isSelecting = true
-                        this._isRect = false
-                        this._isCir = false
-                        this._isTri = false
-
                         this._multiSelectingRectPos.x1 = bufferX
                         this._multiSelectingRectPos.y1 = bufferY
                     }
                 } else {
-                    // console.log("CTRL MODE")
-                    if (isDecoratedShape(target!)) { //选中元素了
-                        // console.log("一、选中元素了")
-                        //判断上下文，是否先前已经选中多个元素
+                    if (isDecoratedShape(target!)) {
                         if (this._gui!.selectedElements.size == 0) {
-                            // console.log("1、先前没有选中任何元素,新增元素")
                             target.guiElement.isSelected = true
                         } else if (this._gui!.selectedElements.size == 1) {
-                            // console.log("2、先前选中单个元素")
                             if (this._gui!.selectedElements.has(target.guiElement.guiElementId)) {
-                                // console.log("1）当前选的元素等于先前选的元素，取消该元素选中 Finish")
                                 target.guiElement.isSelected = false
                             } else {
-                                // console.log("2）当前选的元素不等于先前选的元素 新增元素 Finish")
                                 target.guiElement.isSelected = true
                             }
                         } else if (this._gui!.selectedElements.size > 1) {
-                            // console.log("3、先前选中多个元素")
                             if (this._gui!.selectedElements.has(target.guiElement.guiElementId)) {
-                                //已经选中了，且是多选，所以开启拖拽操作
-                                // console.log("1）当前选的元素是先前选的元素中的一个 删除该元素 Finish")
                                 this._gui!.selectedElements.get(target.guiElement.guiElementId)!.isSelected = false
                             } else {
-                                //重置selected中所有元素的isSelected为False
-                                // console.log("2）当前选的元素不是先前选的元素中的一个，新增元素 Finish")
                                 target.guiElement.isSelected = true
                             }
                         }
                         this._isSelecting = false
                         this._isDragging = true
-                        this._isRect = false
-                        this._isCir = false
-                        this._isTri = false
-
                         this._gui!.selectedElementsRect!.baseBufferElement.width = 0
                         this._gui!.selectedElementsRect!.baseBufferElement.height = 0
                     } else {
-                        // console.log("二、选中画布了，停止拖拽元素操作,开始框选行为")
                         let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                         let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
 
                         this._isDragging = false
                         this._isSelecting = true
-                        this._isRect = false
-                        this._isCir = false
-                        this._isTri = false
-
                         this._multiSelectingRectPos.x1 = bufferX
                         this._multiSelectingRectPos.y1 = bufferY
                     }
                 }
-                // console.log("this._selectedElement", this._gui!.selectedElements)
             }
             else if (this._currentTool == 'addStraightLine') {
                 console.log("ADD MODE --LINE")
@@ -790,9 +729,6 @@ export default class SvgEditor {
                 }
                 this._isSelecting = false
                 this._isDragging = true
-                this._isRect = false
-                this._isCir = false
-                this._isTri = false
 
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -874,9 +810,6 @@ export default class SvgEditor {
                 }
                 this._isSelecting = false
                 this._isDragging = true
-                this._isRect = false
-                this._isCir = false
-                this._isTri = false
 
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -994,9 +927,6 @@ export default class SvgEditor {
                 //首先判断是否选中元素了
                 this._isSelecting = false
                 this._isDragging = true
-                this._isRect = false
-                this._isCir = false
-                this._isTri = false
                 if (isDecoratedShape(target!)) { //选中元素了
                     // console.log("一、选中元素了")
                     // 取消之前所有元素的选中，只选中当前元素
@@ -1026,9 +956,6 @@ export default class SvgEditor {
             else if (this._currentTool == 'deletePoint') {
                 this._isSelecting = false
                 this._isDragging = true
-                this._isRect = false
-                this._isCir = false
-                this._isTri = false
                 console.log("DELETE MODE - POINT")
                 //首先判断是否选中元素了
                 if (isDecoratedShape(target!)) { //选中元素了
@@ -1116,38 +1043,20 @@ export default class SvgEditor {
             else if (this._currentTool == 'mark') {
                 console.log("MARK")
                 if (isDecoratedShape(target!)) { //选中元素了
-                    // console.log("一、选中元素了")
-                    //重置selected中元素的isSelected为False
                     for (let element of this._gui!.selectedElements.values()) {
                         element.isSelected = false
                     }
                     target.guiElement.isSelected = true
-
-                    // console.log("当前选中的元素：", target.guiElement)
                     this._isSelecting = false
                     this._isDragging = true
-                    this._isRect = false
-                    this._isCir = false
-                    this._isTri = false
 
                     this._ifMarked = true
                     this._markedId = target.guiElement.guiElementId
 
                     let commentPos = new Point(e.clientX, e.clientY)
                     this._textPoint = commentPos
-                    // if (target.guiElement instanceof GUIStraightLine || target.guiElement instanceof GUICubicCurve) {
-                    //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedLine)
-                    // }
-                    // else if (target.guiElement instanceof GUIOnPoint) {
-                    //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOnPoint)
-                    // }
-                    // else if (target.guiElement instanceof GUIOffPoint) {
-                    //     target.guiElement.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkedOffPoint)
-                    // }
-
                 }
                 else {
-                    // 选中画布了
                     console.log("no element choose to mark!")
                 }
             }
@@ -1168,9 +1077,6 @@ export default class SvgEditor {
             else if (this._currentTool == 'deleteMark') {
                 this._isSelecting = false
                 this._isDragging = true
-                this._isRect = false
-                this._isCir = false
-                this._isTri = false
                 console.log("DELETE MODE - MARK")
                 //首先判断是否选中元素了
                 if (isDecoratedShape(target!)) { //选中元素了
@@ -1192,6 +1098,7 @@ export default class SvgEditor {
                 }
             }
             else if (this._currentTool == 'addRectangle') {
+                this._isRect = true
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
 
@@ -1200,14 +1107,12 @@ export default class SvgEditor {
                 }
                 this._isDragging = false
                 this._isSelecting = false
-                this._isRect = true
-                this._isCir = false
-                this._isTri = false
 
                 this._multiSelectingRectPos.x1 = bufferX
                 this._multiSelectingRectPos.y1 = bufferY
             }
             else if (this._currentTool == 'addCircle') {
+                this._isCir = true
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
 
@@ -1216,9 +1121,6 @@ export default class SvgEditor {
                 }
                 this._isDragging = false
                 this._isSelecting = false
-                this._isRect = false
-                this._isCir = true
-                this._isTri = false
 
                 this._circlePos.x1 = bufferX
                 this._circlePos.y1 = bufferY
@@ -1226,6 +1128,7 @@ export default class SvgEditor {
                 this._gui!.multiSelectingCircle!.baseBufferElement.center.y = this._circlePos.y1
             }
             else if (this._currentTool == 'addTriangle') {
+                this._isTri = true
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
 
@@ -1234,10 +1137,6 @@ export default class SvgEditor {
                 }
                 this._isDragging = false
                 this._isSelecting = false
-                this._isRect = false
-                this._isCir = false
-                this._isTri = true
-
                 this._circlePos.x1 = bufferX
                 this._circlePos.y1 = bufferY
                 this._gui!.multiSelectingTri!.baseBufferElement.center.x = this._circlePos.x1
@@ -1245,10 +1144,11 @@ export default class SvgEditor {
             }
             else if (this._currentTool == 'ruler') {
                 console.log("ruler MODE")
+                for (let element of this._gui!.selectedElements.values()) {
+                    element.isSelected = false
+                }
                 if (isDecoratedShape(target!)) { //选中元素了
-                    for (let element of this._gui!.selectedElements.values()) {
-                        element.isSelected = false
-                    }
+
                     target.guiElement.isSelected = true
 
                     if (target.guiElement instanceof GUIOnPoint) {
@@ -1307,9 +1207,6 @@ export default class SvgEditor {
 
                     this._isSelecting = false
                     this._isDragging = false
-                    this._isRect = false
-                    this._isCir = false
-                    this._isTri = false
 
                 } else {
                     //选中画布了
@@ -1342,16 +1239,177 @@ export default class SvgEditor {
                     this._gui!.multiSelectingLine!.baseBufferElement.attributes.point2.y = bufferY
                     this._isDragging = false
                     this._isSelecting = true
-                    this._isRect = false
-                    this._isCir = false
-                    this._isTri = false
                     this._pointPos = false
                     this._linePos = true
                     this._curvePos = false
                 }
             }
-            else if (this._currentTool == 'test') {
-                console.log("TEST")
+            else if (this._currentTool == 'shapeMark') {
+                if (isDecoratedShape(target!)) {
+                    for (let element of this._gui!.selectedElements.values()) {
+                        element.isSelected = false
+                    }
+                    if (target.guiElement instanceof GUIMarkLine) {
+                        // 选中标记线
+                        if (!e.ctrlKey) {
+                            // 没有多选
+                        }
+                        else {
+                            // 多选
+                        }
+                    }
+                    else {
+                        // 选中矢量元素
+                        if (target.guiElement instanceof GUIStraightLine) {
+                            // 选中直线
+                            this._isSelecting = false
+                            this._isDragging = false
+                            this._isLineMark = true
+                            let guiStraightLine = target.guiElement
+                            let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                            let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                            let point1 = guiStraightLine?.previousGUIPoint
+                            let point2 = guiStraightLine?.nextGUIPoint
+                            let newX = 0, newY = 0
+                            let startPoint
+                            let startGUIPoint
+                            if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                                if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
+                                    newX = point2!.baseBufferElement.center.x
+                                    newY = point2!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point2
+                                }
+                                else {
+                                    newX = point1!.baseBufferElement.center.x
+                                    newY = point1!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point1
+                                }
+                            }
+                            else {
+                                if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
+                                    newX = point2!.baseBufferElement.center.x
+                                    newY = point2!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point2
+                                }
+                                else {
+                                    newX = point1!.baseBufferElement.center.x
+                                    newY = point1!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point1
+                                }
+                            }
+                            let endPoint = new Point(bufferX, bufferY)
+                            let endGUIPoint = new GUIOnPoint(endPoint)
+                            let markGUILine = new GUIMarkLine(startPoint, endPoint, startGUIPoint, endGUIPoint, guiStraightLine)
+                            endGUIPoint.previousGUILine = markGUILine
+                            if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                                if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
+                                    guiStraightLine.nextMarkLine = markGUILine
+                                }
+                                else {
+                                    guiStraightLine.previousMarkLine = markGUILine
+                                }
+                            }
+                            else {
+                                if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
+                                    guiStraightLine.nextMarkLine = markGUILine
+                                }
+                                else {
+                                    guiStraightLine.previousMarkLine = markGUILine
+                                }
+                            }
+                            this._multiSelectingRectPos.x1 = newX
+                            this._multiSelectingRectPos.y1 = newY
+                            this._gui!.selectedElements.set(endGUIPoint.guiElementId, endGUIPoint)
+                            this._gui!.selectedElements.get(endGUIPoint.guiElementId)!.isSelected = true
+                        }
+                        else if (target.guiElement instanceof GUICubicCurve) {
+                            // 选中曲线
+                            this._isSelecting = false
+                            this._isDragging = false
+                            this._isLineMark = true
+                            let guiCurve = target.guiElement
+                            let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                            let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                            let point1 = guiCurve?.previousGUIPoint
+                            let point2 = guiCurve?.nextGUIPoint
+                            let fatherLine
+                            let newX = 0, newY = 0
+                            let startPoint
+                            let startGUIPoint
+                            if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                                if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
+                                    newX = point2!.baseBufferElement.center.x
+                                    newY = point2!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point2
+                                    fatherLine = point2?.previousControlPoint?.correspondingGUIControlLine
+                                }
+                                else {
+                                    newX = point1!.baseBufferElement.center.x
+                                    newY = point1!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point1
+                                    fatherLine = point1?.nextControlPoint?.correspondingGUIControlLine
+                                }
+                            }
+                            else {
+                                if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
+                                    newX = point2!.baseBufferElement.center.x
+                                    newY = point2!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point2
+                                    fatherLine = point2?.previousControlPoint?.correspondingGUIControlLine
+                                }
+                                else {
+                                    newX = point1!.baseBufferElement.center.x
+                                    newY = point1!.baseBufferElement.center.y
+                                    startPoint = new Point(newX, newY)
+                                    startGUIPoint = point1
+                                    fatherLine = point1?.nextControlPoint?.correspondingGUIControlLine
+                                }
+                            }
+                            let endPoint = new Point(bufferX, bufferY)
+                            let endGUIPoint = new GUIOnPoint(endPoint)
+                            let markGUILine = new GUIMarkLine(startPoint, endPoint, startGUIPoint, endGUIPoint, fatherLine)
+                            endGUIPoint.previousGUILine = markGUILine
+                            if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                                if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
+                                    guiCurve.nextMarkLine = markGUILine
+                                }
+                                else {
+                                    guiCurve.previousMarkLine = markGUILine
+                                }
+                            }
+                            else {
+                                if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
+                                    guiCurve.nextMarkLine = markGUILine
+                                }
+                                else {
+                                    guiCurve.previousMarkLine = markGUILine
+                                }
+                            }
+                            this._multiSelectingRectPos.x1 = newX
+                            this._multiSelectingRectPos.y1 = newY
+                            this._gui!.selectedElements.set(endGUIPoint.guiElementId, endGUIPoint)
+                            this._gui!.selectedElements.get(endGUIPoint.guiElementId)!.isSelected = true
+                        }
+                        else if (target.guiElement instanceof GUIOnPoint) {
+                            // 选中点
+                            this._isSelecting = false
+                            this._isDragging = false
+                            let guiPoint = target.guiElement
+                            // let markRing = new BaseBufferRing(guiPoint.baseBufferElement.center)
+                            let markGUIRing = new GUIRing(guiPoint.baseBufferElement.center)
+                            markGUIRing.fatherPoint = guiPoint
+                            guiPoint.markRing = markGUIRing
+                        }
+
+                    }
+                }
             }
 
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
@@ -1370,13 +1428,12 @@ export default class SvgEditor {
                 if (l != 0) {
                     a = Math.round(Math.asin(Math.abs(y1 - y2) / l) / Math.PI * 180)
                 }
-
                 this._posSegment[2] = bufferX
                 this._posSegment[3] = bufferY
                 this._posSegment[4] = l
                 this._posSegment[5] = a
             }
-            else if (this._isSelecting || this._isRect) {
+            else if ((this._isSelecting || this._isRect) && !this._linePos) {
                 // console.log("正在拖动——")
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
@@ -1399,22 +1456,202 @@ export default class SvgEditor {
             else if (this._isCir) {
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
-                this._gui!.multiSelectingCircle!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2))
+                this._gui!.multiSelectingCircle!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2)) * 2.5
             }
             else if (this._isTri) {
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
-                this._gui!.multiSelectingTri!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2))
+                this._gui!.multiSelectingTri!.baseBufferElement.radius = Math.sqrt(Math.pow(this._circlePos.x1 - bufferX, 2) + Math.pow(this._circlePos.y1 - bufferY, 2)) * 2.5
+            }
+            else if (this._isLineMark) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                let endGUIPoint
+                for (endGUIPoint of this._gui!.selectedElements.values()) {
+                }
+                if (endGUIPoint instanceof GUIOnPoint) {
+                    let guiMarkLine = endGUIPoint.previousGUILine
+                    if (guiMarkLine instanceof GUIMarkLine) {
+                        let guiLine = guiMarkLine.fatherGUILine
+                        if (instanceOfGUILine(guiLine)) {
+                            let point1 = guiLine?.previousGUIPoint
+                            let point2 = guiLine?.nextGUIPoint
+                            if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                                endGUIPoint.baseBufferElement.center.x = bufferX
+                                endGUIPoint.baseBufferElement.center.y = point1!.baseBufferElement.center.y
+                            }
+                            else if (point1!.baseBufferElement.center.x == point2!.baseBufferElement.center.x) {
+                                endGUIPoint.baseBufferElement.center.x = point1!.baseBufferElement.center.x
+                                endGUIPoint.baseBufferElement.center.y = bufferY
+                            }
+                            else {
+                                let newX = this._multiSelectingRectPos.x1 - (point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x) / (point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) * (this._multiSelectingRectPos.y1 - bufferY)
+                                endGUIPoint.baseBufferElement.center.x = newX
+                                endGUIPoint.baseBufferElement.center.y = bufferY
+                            }
+                        }
+                    }
+                }
+            }
+            else if (this._isDragging) {
+                for (let element of this._gui!.selectedElements.values()) {
+                    if (element instanceof GUIOffPoint) {
+                        element = element.correspondingGUIPoint!
+                    }
+                    if (element instanceof GUIOnPoint) {
+                        if (element.previousGUILine instanceof GUIStraightLine) {
+                            let newelement = element.previousGUILine
+                            if (newelement.previousMarkLine) {
+                                let x1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.previousMarkLine.l
+                                x1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x = (x1 - x2) / ll * l + x1
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y = (y1 - y2) / ll * l + y1
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.x = newelement.previousGUIPoint!.baseBufferElement.center.x
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.y = newelement.previousGUIPoint!.baseBufferElement.center.y
+                            }
+                            if (newelement.nextMarkLine) {
+                                let x1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.nextMarkLine.l
+                                x1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x = (x1 - x2) / ll * l + x1
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y = (y1 - y2) / ll * l + y1
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.x = newelement.nextGUIPoint!.baseBufferElement.center.x
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.y = newelement.nextGUIPoint!.baseBufferElement.center.y
+
+                            }
+                        }
+                        else if (element.previousGUILine instanceof GUICubicCurve) {
+                            let newelement = element.previousGUILine
+                            if (newelement.previousMarkLine) {
+                                let x1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.previousMarkLine.l
+                                x1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x = -(x1 - x2) / ll * l + x1
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y = -(y1 - y2) / ll * l + y1
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.x = newelement.previousGUIPoint!.baseBufferElement.center.x
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.y = newelement.previousGUIPoint!.baseBufferElement.center.y
+                            }
+                            if (newelement.nextMarkLine) {
+                                let x1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.nextMarkLine.l
+                                x1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x = (x1 - x2) / ll * l + x2
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y = (y1 - y2) / ll * l + y2
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.x = newelement.nextGUIPoint!.baseBufferElement.center.x
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.y = newelement.nextGUIPoint!.baseBufferElement.center.y
+
+                            }
+                        }
+                        if (element.nextGUILine instanceof GUIStraightLine) {
+                            let newelement = element.nextGUILine
+                            if (newelement.previousMarkLine) {
+                                let x1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.previousMarkLine.l
+                                x1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x = (x1 - x2) / ll * l + x1
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y = (y1 - y2) / ll * l + y1
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.x = newelement.previousGUIPoint!.baseBufferElement.center.x
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.y = newelement.previousGUIPoint!.baseBufferElement.center.y
+                            }
+                            if (newelement.nextMarkLine) {
+                                let x1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.nextMarkLine.l
+                                x1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x = (x1 - x2) / ll * l + x1
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y = (y1 - y2) / ll * l + y1
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.x = newelement.nextGUIPoint!.baseBufferElement.center.x
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.y = newelement.nextGUIPoint!.baseBufferElement.center.y
+
+                            }
+                        }
+                        else if (element.nextGUILine instanceof GUICubicCurve) {
+                            let newelement = element.nextGUILine
+                            if (newelement.previousMarkLine) {
+                                let x1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.previousMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.previousMarkLine.l
+                                x1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.previousMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.previousMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.x = -(x1 - x2) / ll * l + x1
+                                newelement.previousMarkLine.nextGUIPoint!.baseBufferElement.center.y = -(y1 - y2) / ll * l + y1
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.x = newelement.previousGUIPoint!.baseBufferElement.center.x
+                                newelement.previousMarkLine.baseBufferElement.attributes.point1.y = newelement.previousGUIPoint!.baseBufferElement.center.y
+                            }
+                            if (newelement.nextMarkLine) {
+                                let x1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                                let x2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                                let y1 = newelement.nextMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                                let y2 = newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                                let l = newelement.nextMarkLine.l
+                                x1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.x
+                                x2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.x
+                                y1 = newelement.nextMarkLine.fatherGUILine!.nextGUIPoint!.baseBufferElement.center.y
+                                y2 = newelement.nextMarkLine.fatherGUILine!.previousGUIPoint!.baseBufferElement.center.y
+
+                                let ll = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.x = (x1 - x2) / ll * l + x2
+                                newelement.nextMarkLine.nextGUIPoint!.baseBufferElement.center.y = (y1 - y2) / ll * l + y2
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.x = newelement.nextGUIPoint!.baseBufferElement.center.x
+                                newelement.nextMarkLine.baseBufferElement.attributes.point1.y = newelement.nextGUIPoint!.baseBufferElement.center.y
+
+                            }
+                        }
+                    }
+                }
             }
             this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
         } else if (eventType == 'pointerup' || eventType == 'pointerleave') {
-            // if (this._currentTool == 'deletemark') {
-            //     this._ifSend = 1
-            //     // console.log("我是ts里的ifsend", this._ifSend)
-            //     for (let element of this._gui!.selectedElements.values()) {
-            //         element.isSelected = false
-            //     }
-            // }
             if (this._isDragging) {
                 // console.log("先前处于拖拽行为，且选中元素长度>0 执行最终拖拽取整")
                 this.dragElements(e, true)
@@ -1443,27 +1680,15 @@ export default class SvgEditor {
                                 // console.log("目标元素是个点")
                                 if (targetPoint.previousGUILine != null && targetPoint.nextGUILine != null) {
                                     mergeFlag = 0
-                                    // console.log("目标元素有前后线")
                                 }
                             }
                             else {
                                 mergeFlag = 0
                             }
-                            // console.log("ifMerge", mergeFlag)
                             if (mergeFlag == 1) {
-                                // 这两个点可以合并
-                                // console.log("开始合并两个点")
                                 if (currentPoint instanceof GUIOnPoint && targetPoint instanceof GUIOnPoint) {
-                                    // console.log("这是两个点")
-                                    // console.log("当前点的前线：", currentPoint.previousGUILine)
-                                    // console.log("当前点的后线：", currentPoint.nextGUILine)
                                     if (currentPoint.nextGUILine == null) {
-                                        // console.log("当前点没有后线")
-                                        // console.log("目标点的前线：", targetPoint.previousGUILine)
-                                        // console.log("目标点的后线：", targetPoint.nextGUILine)
                                         if (targetPoint.previousGUILine == null) {
-                                            // console.log("目标点没有前线")
-                                            // console.log("合并！！")
                                             currentPoint.nextGUILine = targetPoint.nextGUILine
 
                                             if (currentPoint.nextGUILine) {
@@ -1478,24 +1703,14 @@ export default class SvgEditor {
                                                 currentPoint.nextControlPoint.correspondingGUIControlLine.onPoint.baseBufferElement.center = currentPoint.baseBufferElement.center
                                             }
                                             targetPoint.isVisible = false
-                                            // console.log("currentPoint.previousGUILine", currentPoint.previousGUILine)
-                                            // console.log("targetPoint", targetPoint)
-                                            // console.log("currentPoint", currentPoint)
-                                            // console.log("这个线连的两个点", currentPoint.previousGUILine?.previousGUIPoint, currentPoint.previousGUILine?.nextGUIPoint)
                                         }
                                         else if (targetPoint.nextGUILine == null) {
-
                                         }
-
                                     }
                                     else if (currentPoint?.previousGUILine == null) {
                                         if (targetPoint?.previousGUILine == null) {
-
                                         }
                                         else if (targetPoint.nextGUILine == null) {
-
-                                            // console.log("目标点没有前线")
-                                            // console.log("我我我合并！！")
                                             currentPoint.previousGUILine = targetPoint.previousGUILine
 
                                             if (currentPoint.previousGUILine) {
@@ -1510,17 +1725,11 @@ export default class SvgEditor {
                                                 currentPoint.previousControlPoint.correspondingGUIControlLine.onPoint.baseBufferElement.center = currentPoint.baseBufferElement.center
                                             }
                                             targetPoint.isVisible = false
-                                            // console.log("currentPoint.previousGUILine", currentPoint.previousGUILine)
-                                            // console.log("targetPoint", targetPoint)
-                                            // console.log("currentPoint", currentPoint)
-                                            // console.log("这个线连的两个点", currentPoint.previousGUILine.previousGUIPoint, currentPoint.previousGUILine.nextGUIPoint)
                                         }
 
                                     }
 
                                 }
-
-                                // console.log("MERGEMAP", this._gui!.guiBaseElements)
                             }
                         }
                     }
@@ -1537,51 +1746,53 @@ export default class SvgEditor {
                                     curveLine = element.previousGUILine
                                     let controlPoint1 = new Point(curveLine?.previousGUIPoint?.baseBufferElement.attributes.center.x! * 2 / 3 + curveLine?.nextGUIPoint?.baseBufferElement.attributes.center.x! / 3, curveLine?.previousGUIPoint?.baseBufferElement.attributes.center.y! * 2 / 3 + curveLine?.nextGUIPoint?.baseBufferElement.attributes.center.y! / 3)
                                     let controlPoint2 = new Point(curveLine?.previousGUIPoint?.baseBufferElement.attributes.center.x! / 3 + curveLine?.nextGUIPoint?.baseBufferElement.attributes.center.x! * 2 / 3, curveLine?.previousGUIPoint?.baseBufferElement.attributes.center.y! / 3 + curveLine?.nextGUIPoint?.baseBufferElement.attributes.center.y! * 2 / 3)
-                                    if (curveLine?.previousGUIPoint instanceof GUIOnPoint)
+                                    if (curveLine?.previousGUIPoint instanceof GUIOnPoint) {
                                         curveLine!.previousGUIPoint!.nextControlPoint!.baseBufferElement.center = controlPoint1
+                                        curveLine.previousGUIPoint.nextControlPoint!.correspondingGUIControlLine!.baseBufferElement.attributes.point2 = controlPoint1
+                                    }
 
-                                    if (curveLine?.nextGUIPoint instanceof GUIOnPoint)
+                                    if (curveLine?.nextGUIPoint instanceof GUIOnPoint) {
                                         curveLine!.nextGUIPoint!.previousControlPoint!.baseBufferElement.center = controlPoint2
+                                        curveLine.nextGUIPoint.previousControlPoint!.correspondingGUIControlLine!.baseBufferElement.attributes.point1 = controlPoint2
+                                    }
+
                                 }
                             }
 
                         }
                     }
                 }
-
-                // let segment = this.transSVG()
-                // console.log("这是我自己写的输出SVG的结果: ", segment)
-
                 this._isDragging = false
                 this._isSelecting = false
                 this._isRect = false
                 this._isCir = false
                 this._isTri = false
-
-
-                // if (isPrimary(e)) {
-                //     this._isPointerDown.primary = false
-                //     this._currentEvent.primary = null
-                //     this._lastEvent.primary = null
-                // }
-                // else {
-                //     this._isPointerDown.secondary = false
-                //     this._currentEvent.secondary = null
-                //     this._lastEvent.secondary = null
-                // }
-                if (this._currentTool != 'mark' && (!e.ctrlKey)) {
-                    this._ifSend = 1
-                    // console.log("我是ts里的ifsend", this._ifSend)
+                if (this._currentTool == 'shapeMark') {
 
                 }
-                for (let element of this._gui!.selectedElements.values()) {
-                    element.isSelected = false
+                else if (this._currentTool != 'mark' && (!e.ctrlKey)) {
+                    // this._ifSend = 1
+                    // // console.log("我是ts里的ifsend", this._ifSend)
+                    // for (let element of this._gui!.selectedElements.values()) {
+                    //     element.isSelected = false
+                    // }
                 }
+
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
 
             }
-            else if (this._isSelecting) {
-                // console.log("先前处于框选行为，此为结束框选终点，计算框选矩形相关内容")
+            else if (this._linePos) {
+                let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
+                let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
+                this._multiSelectingRectPos.x1 = 0
+                this._multiSelectingRectPos.y1 = 0
+                this._gui!.multiSelectingRect!.baseBufferElement.width = 0
+                this._gui!.multiSelectingRect!.baseBufferElement.height = 0
+                this._isDragging = false
+                this._isSelecting = false
+                this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
+            }
+            else if (this._isSelecting && !this._linePos) {
                 let { normalX, normalY } = this.gui.clientCoordinateToNormalCoordinate(e.clientX, e.clientY)
                 let { bufferX, bufferY } = this.viewPort.normalCoordinateToBufferCoordinate(normalX, normalY)
 
@@ -1875,8 +2086,29 @@ export default class SvgEditor {
                 this._isRect = false
                 this._isCir = false
                 this._isTri = false
-
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
+            }
+            else if (this._isLineMark) {
+                let endGUIPoint
+                for (endGUIPoint of this._gui!.selectedElements.values()) {
+                }
+                if (endGUIPoint instanceof GUIOnPoint) {
+                    endGUIPoint.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkingOnPoint)
+                    let guiMarkLine = endGUIPoint.previousGUILine
+                    if (guiMarkLine instanceof GUIMarkLine) {
+                        let x1 = guiMarkLine.previousGUIPoint!.baseBufferElement.center.x
+                        let x2 = guiMarkLine.nextGUIPoint!.baseBufferElement.center.x
+                        let y1 = guiMarkLine.previousGUIPoint!.baseBufferElement.center.y
+                        let y2 = guiMarkLine.nextGUIPoint!.baseBufferElement.center.y
+                        guiMarkLine.l = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+                    }
+                }
+                this._isDragging = false
+                this._isSelecting = false
+                this._isLineMark = false
+                for (endGUIPoint of this._gui!.selectedElements.values()) {
+                    endGUIPoint.isSelected = false
+                }
             }
             if (isPrimary(e)) {
                 this._isPointerDown.primary = false

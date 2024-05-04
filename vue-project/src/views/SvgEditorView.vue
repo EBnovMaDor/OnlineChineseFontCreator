@@ -21,6 +21,7 @@
         <el-button type="primary" @click="markText"> markText </el-button>
         <el-button type="primary" @click="ruler"> ruler </el-button>
         <el-button type="primary" @click="deleteMark"> deletemark </el-button>
+        <el-button type="primary" @click="shapeMark"> shapeMark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
         <div v-if = "pointPos">点的坐标 x: {{ pointx1 }}, y:{{ pointy1 }}</div>
@@ -168,6 +169,9 @@ export default defineComponent({
         mark(){
             svgEditor?.setTool('mark')
         },
+        shapeMark(){
+            svgEditor?.setTool('shapeMark')
+        },
         markText(){
             svgEditor?.setTool('markText')
         },
@@ -310,7 +314,7 @@ export default defineComponent({
                 //     this.comment = svgEditor!.showComment(this.markedId)!
                 // }
                 this.ifSend = svgEditor?.ifSend!
-                if (this.ifSend == 1) {
+                if (this.ifSend == 2) {
                     // console.log("我是vue里的ifsend", this.ifSend)
                     // console.log("svgEditor",svgEditor)
                     if (svgEditor) {

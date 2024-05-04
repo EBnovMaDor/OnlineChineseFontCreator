@@ -8,6 +8,7 @@ import Point from "../../util/Point";
 import GlobalManager from "../../GlobalManager";
 import type GUILine from "../interface/GUILine";
 import RefreshSEBBoxEvent from "../../font-creator-event/RefreshSEBBoxEvent";
+import type GUIMarkLine from "./GUIMarkLine";
 
 export default class GUICubicCurve implements GUILine {
     get discriminator() {
@@ -23,6 +24,8 @@ export default class GUICubicCurve implements GUILine {
 
     private _previousGUIPoint: GUIOnPoint | null = null
     private _nextGUIPoint: GUIOnPoint | null = null
+    private _previousMarkLine: GUIMarkLine | null = null
+    private _nextMarkLine: GUIMarkLine | null = null
 
     private _comment: string = ""
 
@@ -160,6 +163,21 @@ export default class GUICubicCurve implements GUILine {
     get guiElementId() {
         return this._guiElementId
     }
+    get previousMarkLine() {
+        return this._previousMarkLine
+    }
+
+    get nextMarkLine() {
+        return this._nextMarkLine
+    }
+    set previousMarkLine(previousMarkLine: GUIMarkLine | null) {
+        this._previousMarkLine = previousMarkLine
+    }
+
+    set nextMarkLine(nextMarkLine: GUIMarkLine | null) {
+        this._nextMarkLine = nextMarkLine
+    }
+
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
     }

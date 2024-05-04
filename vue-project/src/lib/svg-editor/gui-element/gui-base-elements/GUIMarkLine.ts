@@ -1,42 +1,34 @@
-import { Shape, type ShapeConfig } from "konva/lib/Shape";
-import type BaseBufferElementConfig from "../../base-buffer-element/interface/BaseBufferElementConfig";
-import type GUIElement from "../interface/GUIBaseElement";
-import type BaseBufferElement from "../../base-buffer-element/interface/BaseBufferElement";
 import GUIOnPoint from "./GUIOnPoint";
-import GUIOffPoint from "./GUIOffPoint";
-import { decorateShape } from "../../util/DecoratedShape";
-import GUIAttrs from "./GUIAttrs";
 import BaseBufferLine from "../../base-buffer-element/BaseBufferLine";
+import GUIAttrs from "./GUIAttrs";
+import { decorateShape } from "../../util/DecoratedShape";
 import Point from "../../util/Point";
 import GlobalManager from "../../GlobalManager";
 import type GUILine from "../interface/GUILine";
-import type Observer from "../../util/ObserverMode/Observer";
-import type Subject from "../../util/ObserverMode/Subject";
+import RefreshSEBBoxEvent from "../../font-creator-event/RefreshSEBBoxEvent";
 
-export default class GUIControlLine implements GUILine {
-    get discriminator() {
-        return 'GUILine'
-    }
-
+export default class GUIMarkLine implements GUILine {
     private _guiElementId: number = 0
-    private _isVisible: boolean = true
 
     private _baseBufferElement: BaseBufferLine
     private _virtualBufferElement: BaseBufferLine | null = null
 
     private _isSelected: boolean = false
+    private _isVisible: boolean = true
 
-    private _onPoint: GUIOnPoint | null = null
-    private _offPoint: GUIOffPoint | null = null
+    private _fatherGUILine: GUILine | null = null
+    private _previousGUIPoint: GUIOnPoint | null = null
+    private _nextGUIPoint: GUIOnPoint | null = null
+    private _comment:string =""
 
-    private _comment: string = ""
+    private _l:number = 0
 
-    constructor(startPoint: Point, endPoint: Point, onPoint: GUIOnPoint | null = null, offPoint: GUIOffPoint | null = null) {
+    constructor(startPoint: Point, endPoint: Point, previousGUIPoint: GUIOnPoint | null = null, nextGUIPoint: GUIOnPoint | null = null, fatherGUILine : GUILine | null = null) {
         this._baseBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.lineGroup)
         this._virtualBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.virtualLineGroup)
 
-        this._baseBufferElement.config = Object.assign({}, GUIAttrs.ControlLine)
-        this._virtualBufferElement.config = Object.assign({}, GUIAttrs.VirtualControlLine)
+        this._baseBufferElement.config = Object.assign({}, GUIAttrs.MarkingLine)
+        this._virtualBufferElement.config = Object.assign({}, GUIAttrs.VirtualLine)
 
         decorateShape(this._baseBufferElement.konvaElement, this)
         decorateShape(this._virtualBufferElement.konvaElement, this)
@@ -44,45 +36,48 @@ export default class GUIControlLine implements GUILine {
         let { gui } = GlobalManager.instance
         gui.addGUIBaseElement(this)
 
-        this._onPoint = onPoint
-        this._offPoint = offPoint
+        this._previousGUIPoint = previousGUIPoint
+        this._nextGUIPoint = nextGUIPoint
+        this._fatherGUILine = fatherGUILine
     }
 
     delete() {
         let { gui } = GlobalManager.instance
+        console.log("delete in guimarkline")
         gui.deleteGUIBaseElement(this)
-        if (this._offPoint)
-            this._offPoint.correspondingGUIControlLine = null
     }
 
-    //作为主题，通知该线的观察者——GUI
+    //作为主题，通知该线的观察者
     notifyObservers(): void {
         const { gui } = GlobalManager.instance
         gui.update(this._guiElementId, this._isSelected)
     }
-
+    // 根据父线的情况被通知位置
     update(guiElementId: number, isSelected: boolean): void {
-        console.debug("update", this)
-        if (this._onPoint!.isSelected && this._offPoint!.isSelected) {
-            this._isSelected = true
-            this._virtualBufferElement!.config.opacity = 1
-        } else if (!this._onPoint!.isSelected || !this._offPoint!.isSelected) {
-            this._isSelected = false
-            this._virtualBufferElement!.config.opacity = 0
-        }
         this.notifyObservers()
+    }
+
+    get discriminator() {
+        return 'GUILine'
     }
 
     draw(): void {
         this._baseBufferElement.draw()
     }
 
-    get comment() {
-        return this._comment
+    get comment(){
+            return this._comment
     }
 
-    set comment(comment: string) {
+    set comment(comment:string){
         this._comment = comment
+    }
+    set l(l:number){
+        this._l = l
+    }
+
+    get l(){
+        return this._l
     }
 
     get isSelected() {
@@ -91,13 +86,13 @@ export default class GUIControlLine implements GUILine {
 
     set isSelected(isSelected: boolean) {
         console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
-        const { gui } = GlobalManager.instance
         if (this._isSelected == isSelected
-            && this._onPoint!.isSelected == isSelected
-            && this._offPoint!.isSelected == isSelected) return
+            && this._previousGUIPoint!.isSelected == isSelected
+            && this._nextGUIPoint!.isSelected == isSelected) return
+        const { gui } = GlobalManager.instance
         this._isSelected = isSelected
-        this._onPoint!.isSelected = isSelected
-        this._offPoint!.isSelected = isSelected
+        this._previousGUIPoint!.isSelected = isSelected
+        this._nextGUIPoint!.isSelected = isSelected
         if (isSelected) {
             this._virtualBufferElement!.config.opacity = 1
         } else {
@@ -105,11 +100,12 @@ export default class GUIControlLine implements GUILine {
         }
         this.notifyObservers()
     }
-    get previousMarkLine() {
+
+    get previousMarkLine(){
         return null
     }
 
-    get nextMarkLine() {
+    get nextMarkLine(){
         return null
     }
 
@@ -121,28 +117,28 @@ export default class GUIControlLine implements GUILine {
         return this._virtualBufferElement
     }
 
-    set onPoint(onPoint: GUIOnPoint | null) {
-        this._onPoint = onPoint
+    set previousGUIPoint(previousGUIPoint: GUIOnPoint | null) {
+        this._previousGUIPoint = previousGUIPoint
     }
 
-    get onPoint() {
-        return this._onPoint
+    set nextGUIPoint(nextGUIPoint: GUIOnPoint | null) {
+        this._nextGUIPoint = nextGUIPoint
     }
 
-    set offPoint(offPoint: GUIOffPoint | null) {
-        this._offPoint = offPoint
-    }
-
-    get offPoint() {
-        return this._offPoint
+    set fatherGUILine(guiLine:GUILine | null){
+        this._fatherGUILine = guiLine
     }
 
     get previousGUIPoint() {
-        return this._onPoint
+        return this._previousGUIPoint
     }
 
     get nextGUIPoint() {
-        return this._offPoint
+        return this._nextGUIPoint
+    }
+
+    get fatherGUILine(){
+        return this._fatherGUILine
     }
 
     get guiElementId() {
@@ -152,6 +148,7 @@ export default class GUIControlLine implements GUILine {
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
     }
+
     get isVisible() {
         return this._isVisible
     }
@@ -161,4 +158,5 @@ export default class GUIControlLine implements GUILine {
         if (this._baseBufferElement) this._baseBufferElement.konvaElement.visible(isVisible)
         if (this._virtualBufferElement) this._virtualBufferElement.konvaElement.visible(isVisible)
     }
+
 }

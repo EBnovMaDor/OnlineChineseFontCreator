@@ -10,6 +10,7 @@ import GUIAttrs from "./GUIAttrs"
 import GlobalManager from "../../GlobalManager"
 import type GUILine from "../interface/GUILine"
 import GUIOffPoint from "./GUIOffPoint"
+import GUIRing from "./GUIRing"
 import type GUIBaseElement from "../interface/GUIBaseElement"
 
 export default class GUIOnPoint implements GUIBaseElement {
@@ -31,6 +32,8 @@ export default class GUIOnPoint implements GUIBaseElement {
 
     _previousControlPoint: GUIOffPoint | null = null
     _nextControlPoint: GUIOffPoint | null = null
+
+    _markRing : GUIRing | null = null
 
     constructor(centerPoint: Point,
         previousGUILine: GUILine | null = null, nextGUILine: GUILine | null = null,
@@ -104,6 +107,14 @@ export default class GUIOnPoint implements GUIBaseElement {
 
     set comment(comment: string) {
         this._comment = comment
+    }
+
+    get markRing(){
+        return this._markRing
+    }
+
+    set markRing(markRing: GUIRing | null){
+        this._markRing = markRing
     }
 
     get isSelected() {

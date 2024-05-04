@@ -91,6 +91,29 @@ const GUIAttrs = {
         stroke: "Orange",
         strokeWidth: 1,
         isVirtual: false
+    },
+    MarkingOnPoint: {
+        radius: 0,
+        opacity: 0,
+        fill: "blue",
+        stroke: "yellow",
+        strokeWidth: 0,
+        isVirtual: false
+    },
+    MarkingLine: {
+        opacity: 1,
+        stroke: "red",
+        strokeWidth: 1,
+        isVirtual: false
+    },
+    MarkingRing: {
+        outerRadius: 12,
+        innerRadius: 10,
+        opacity: 1,
+        fill: "white",
+        stroke: "blue",
+        strokeWidth: 1,
+        isVirtual: false
     }
 }
 

@@ -6,6 +6,7 @@ import Point from "../../util/Point";
 import GlobalManager from "../../GlobalManager";
 import type GUILine from "../interface/GUILine";
 import RefreshSEBBoxEvent from "../../font-creator-event/RefreshSEBBoxEvent";
+import type GUIMarkLine from "./GUIMarkLine";
 
 export default class GUIStraightLine implements GUILine {
     private _guiElementId: number = 0
@@ -18,7 +19,9 @@ export default class GUIStraightLine implements GUILine {
 
     private _previousGUIPoint: GUIOnPoint | null = null
     private _nextGUIPoint: GUIOnPoint | null = null
-    private _comment:string =""
+    private _previousMarkLine: GUIMarkLine | null = null
+    private _nextMarkLine: GUIMarkLine | null = null
+    private _comment: string = ""
 
     constructor(startPoint: Point, endPoint: Point, previousGUIPoint: GUIOnPoint | null = null, nextGUIPoint: GUIOnPoint | null = null) {
         this._baseBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.lineGroup)
@@ -64,7 +67,7 @@ export default class GUIStraightLine implements GUILine {
             this._previousGUIPoint.nextGUILine = null
     }
 
-    //作为主题，通知该线的观察者——GUI
+    //作为主题，通知该线的观察者——GUI 通知他的markLine
     notifyObservers(): void {
         const { gui } = GlobalManager.instance
         gui.update(this._guiElementId, this._isSelected)
@@ -90,11 +93,11 @@ export default class GUIStraightLine implements GUILine {
         this._baseBufferElement.draw()
     }
 
-    get comment(){
-            return this._comment
+    get comment() {
+        return this._comment
     }
 
-    set comment(comment:string){
+    set comment(comment: string) {
         this._comment = comment
     }
 
@@ -136,12 +139,28 @@ export default class GUIStraightLine implements GUILine {
         this._nextGUIPoint = nextGUIPoint
     }
 
+    set previousMarkLine(previousMarkLine: GUIMarkLine | null) {
+        this._previousMarkLine = previousMarkLine
+    }
+
+    set nextMarkLine(nextMarkLine: GUIMarkLine | null) {
+        this._nextMarkLine = nextMarkLine
+    }
+
     get previousGUIPoint() {
         return this._previousGUIPoint
     }
 
     get nextGUIPoint() {
         return this._nextGUIPoint
+    }
+
+    get previousMarkLine() {
+        return this._previousMarkLine
+    }
+
+    get nextMarkLine() {
+        return this._nextMarkLine
     }
 
     get guiElementId() {
