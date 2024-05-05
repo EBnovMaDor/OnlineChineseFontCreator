@@ -65,18 +65,18 @@
 									 :data="layertreedata"
 									 :props="defaultProps"
 									 node-key="id"
-									 default-expand-all									 
+									 default-expand-all
 									 highlight-current
 									 :expand-on-click-node="false">
 								<template #default="{ node, data }">
 									<span class="custom-tree-node">
 										<span>{{ node.label }}</span>
 										<span>
-											<el-button style="right:10px" v-if="data.id === 1" type="text" circle  size="mini" @click="addNode(node, data)"><el-icon class="el-icon--small"><Plus /></el-icon></el-button>
+											<el-button style="right:10px" v-if="data.id === 1" type="text" circle size="mini" @click="addNode(node, data)"><el-icon class="el-icon--small"><Plus /></el-icon></el-button>
 											<el-button v-if="data.id !== 1" type="text" circle size="mini" @click="hideNode(node, data)"><el-icon class="el-icon--small"><View /></el-icon></el-button>
 											<el-button v-if="data.id !== 1" style="margin:0px;" type="text" circle size="mini" @click="removeNode(node, data)"><el-icon class="el-icon--small"><Delete /></el-icon></el-button>
 										</span>
-										</span>
+									</span>
 								</template>
 							</el-tree>
 						</div>
@@ -93,79 +93,160 @@
 						<div class="block">
 							<el-button-group>
 								<!--选择按钮-->
-								<el-button type="plain" @click="editor">
-									<svg-icon name="xuanze" />
-								</el-button>
+								<el-popover placement="right"
+											title="选择"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="选择点与任意曲线。点击选中并进行修改，按住并拖动进行框选">
+									<template #reference>
+										<el-button type="plain" @click="editor">
+											<svg-icon name="xuanze" />
+										</el-button>
+									</template>
+								</el-popover>
 								<!--移动按钮-->
-								<el-button type="plain" @click="move">
-									<svg-icon name="move" />
-								</el-button>
+								<el-popover placement="right"
+											title="移动"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="按住鼠标左键以拖动画布">
+									<template #reference>
+										<el-button type="plain" @click="move">
+											<svg-icon name="move" />
+										</el-button>
+									</template>
+								</el-popover>
 								<!--形状按钮-->
-								<el-dropdown trigger="click" placement="right">
-									<el-button type="plain" style="border-radius:0px;">
-										<svg-icon name="xingzhuang" />
-									</el-button>
-									<template #dropdown>
-										<el-dropdown-menu>
-											<el-dropdown-item @click.native="addRectangle">矩形</el-dropdown-item>
-											<el-dropdown-item @click.native="addCircle">圆形</el-dropdown-item>
-											<el-dropdown-item @click.native="addTriangle">三角形</el-dropdown-item>
-										</el-dropdown-menu>
+								<el-popover placement="right"
+											title="形状工具"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="绘制矩形、圆形、三角形。按住并拖动以绘制对应大小的形状">
+									<template #reference>
+										<el-dropdown trigger="click" placement="right">
+											<el-button type="plain" style="border-radius:0px;">
+												<svg-icon name="xingzhuang" />
+											</el-button>
+											<template #dropdown>
+												<el-dropdown-menu>
+													<el-dropdown-item @click.native="addRectangle">矩形</el-dropdown-item>
+													<el-dropdown-item @click.native="addCircle">圆形</el-dropdown-item>
+													<el-dropdown-item @click.native="addTriangle">三角形</el-dropdown-item>
+												</el-dropdown-menu>
+											</template>
+										</el-dropdown>
 									</template>
-								</el-dropdown>
+								</el-popover>
 								<!--文本按钮-->
-								<el-button type="plain" @click="markText">
-									<svg-icon style=" width: 22px; height: 22px;" name="wenben" />
-								</el-button>
-								<!--曲线按钮-->
-								<el-dropdown trigger="click" placement="right">
-									<el-button type="plain" style="border-radius:0px;">
-										<svg-icon name="quxian" />
-									</el-button>
-									<template #dropdown>
-										<el-dropdown-menu>
-											<el-dropdown-item @click.native="addStraightLine">添加直线</el-dropdown-item>
-											<el-dropdown-item @click.native="addCurve">添加曲线</el-dropdown-item>
-											<el-dropdown-item @click.native="deleteLine">删除线段</el-dropdown-item>
-											<el-dropdown-item @click.native="deletePoint">删除点</el-dropdown-item>
-										</el-dropdown-menu>
+								<el-popover placement="right"
+											title="文本"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="生成指定文字。在点击处进行输入，点击输入框外部完成输入，ESC取消">
+									<template #reference>
+										<el-button type="plain" @click="markText">
+											<svg-icon style=" width: 22px; height: 22px;" name="wenben" />
+										</el-button>
 									</template>
-								</el-dropdown>
+								</el-popover>
+								<!--曲线按钮-->
+								<el-popover placement="right"
+											title="曲线工具"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="添加与删除任意点与曲线。按住并拖动进行添加，点击进行删除">
+									<template #reference>
+										<el-dropdown trigger="click" placement="right">
+											<el-button type="plain" style="border-radius:0px;">
+												<svg-icon name="quxian" />
+											</el-button>
+											<template #dropdown>
+												<el-dropdown-menu>
+													<el-dropdown-item @click.native="addStraightLine">添加直线</el-dropdown-item>
+													<el-dropdown-item @click.native="addCurve">添加曲线</el-dropdown-item>
+													<el-dropdown-item @click.native="deleteLine">删除线段</el-dropdown-item>
+													<el-dropdown-item @click.native="deletePoint">删除点</el-dropdown-item>
+												</el-dropdown-menu>
+											</template>
+										</el-dropdown>
+									</template>
+								</el-popover>
 								<!--测量按钮-->
-								<el-button type="plain" @click="ruler">
-									<svg-icon style=" width: 30px; height: 30px;" name="celiang" />
-								</el-button>
+								<el-popover placement="right"
+											title="测量"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="测量点与任意曲线。点击选中以显示相关数据">
+									<template #reference>
+										<el-button type="plain" @click="ruler">
+											<svg-icon style=" width: 30px; height: 30px;" name="celiang" />
+										</el-button>
+									</template>
+								</el-popover>
 							</el-button-group>
 						</div>
 
 						<div class="block">
 							<el-button-group style=" display: flex; flex-direction: column;">
 								<!--标注按钮-->
-								<el-button type="plain">
-									<svg-icon name="wenzi" />
-								</el-button>
+								<el-popover placement="right"
+											title="标注"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="标注点与任意曲线。点击选中以标注点，按住并拖动以标注线">
+									<template #reference>
+										<el-button type="plain">
+											<svg-icon name="wenzi" />
+										</el-button>
+									</template>
+								</el-popover>
 								<!--讨论按钮-->
-								<el-button type="plain" @click="mark">
-									<svg-icon style=" width: 32px; height: 32px; transform: translateX(-2px);" name="taolun" />
-								</el-button>
+								<el-popover placement="right"
+											title="讨论"
+											:width="230"
+											trigger="hover"
+											show-after="1000"
+											content="对点与任意曲线标注讨论。点击选中后于右侧添加讨论">
+									<template #reference>
+										<el-button type="plain" @click="mark">
+											<svg-icon style=" width: 32px; height: 32px; transform: translateX(-2px);" name="taolun" />
+										</el-button>
+									</template>
+								</el-popover>
 							</el-button-group>
 						</div>
 
 						<div class="block" style="margin-top: 10vh;">
 							<!--图层按钮-->
-							<el-button type="plain" @click="toggleLayer">
-								<svg-icon style=" width: 30px; height: 30px;" name="tuceng" />
-							</el-button>
+							<el-popover placement="right"
+										title="展开"
+										:width="230"
+										trigger="hover"
+										show-after="1000"
+										content="展开左侧图层任务面板">
+								<template #reference>
+									<el-button type="plain" @click="toggleLayer">
+										<svg-icon style=" width: 30px; height: 30px;" name="tuceng" />
+									</el-button>
+								</template>
+							</el-popover>
 						</div>
 
 					</div>
 				</div>
-				<img src="../image/image1.png" width="1000" height="600" style="position:fixed; top:100px;left:250px;"/>
+				<img src="../image/image1.png" width="1000" height="600" style="position:fixed; top:100px;left:250px;" />
 				<!--字体编辑画布-->
 				<div id="canvas" @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
 
 				<!--底部栏-->
-				<div class="footer" >
+				<div class="footer">
 					<div class="preview">
 						<span>大今国意我永然警转酬随风鹰</span>
 					</div>
@@ -200,14 +281,14 @@
 						</div>
 					</div>
 				</div>
-                <div class="rsidebar-main">
-                    <div style="margin: 5px 0 5px; text-align: left; font-size: 16px;">
-                        <b>信息</b>
-                    </div>
-                    <div v-if="pointPos">点的坐标<br />  x: {{ formatNumber(pointx1) }}, y:{{ formatNumber(pointy1) }}</div>
-                    <div v-if="linePos">直线的两点坐标<br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }}); <br /> (x2: {{ formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }}); <br /> 直线的长度 : {{ formatNumber(length1) }} ; <br /> 线的角度: {{ angle1 }}度</div>
-                    <div v-if="curvePos">曲线的两点坐标 <br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }});<br />  (x2: {{formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }});<br />  控制线长度：{{ formatNumber(length1) }} ; {{ formatNumber(length2) }} ;<br />  线的角度: {{ angle1 }} 度; {{ angle2 }}度</div>
-                </div>
+				<div class="rsidebar-main">
+					<div style="margin: 5px 0 5px; text-align: left; font-size: 16px;">
+						<b>信息</b>
+					</div>
+					<div v-if="pointPos">点的坐标<br />  x: {{ formatNumber(pointx1) }}, y:{{ formatNumber(pointy1) }}</div>
+					<div v-if="linePos">直线的两点坐标<br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }}); <br /> (x2: {{ formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }}); <br /> 直线的长度 : {{ formatNumber(length1) }} ; <br /> 线的角度: {{ angle1 }}度</div>
+					<div v-if="curvePos">曲线的两点坐标 <br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }});<br />  (x2: {{formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }});<br />  控制线长度：{{ formatNumber(length1) }} ; {{ formatNumber(length2) }} ;<br />  线的角度: {{ angle1 }} 度; {{ angle2 }}度</div>
+				</div>
 				<div class="rsidebar-bottom">
 					<div style="margin: 10px 0 10px; text-align: left; font-size: 16px;"><b>按钮</b></div>
 					<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
@@ -233,7 +314,7 @@
 </template>
 
 <script lang="ts">
-	import { ArrowDown, Delete, Edit, Plus,View } from '@element-plus/icons-vue'
+	import { ArrowDown, Delete, Edit, Plus, View } from '@element-plus/icons-vue'
 	import { defineComponent, ref, onMounted } from 'vue'
 	import { ElScrollbar } from 'element-plus'
 	import SvgEditor from '../lib/svg-editor/SvgEditor'
@@ -287,17 +368,17 @@
 				comment: "1",
 				list: [] as any,
 				marklist: [] as any,
-                pointPos: false,
-                linePos: false,
-                curvePos: false,
-                pointx1: 0,
-                pointx2: 0,
-                pointy1: 0,
-                pointy2: 0,
-                length1: 0,
-                length2: 0,
-                angle1: 0,
-                angle2: 0,
+				pointPos: false,
+				linePos: false,
+				curvePos: false,
+				pointx1: 0,
+				pointx2: 0,
+				pointy1: 0,
+				pointy2: 0,
+				length1: 0,
+				length2: 0,
+				angle1: 0,
+				angle2: 0,
 				defaultProps: {
 					children: 'children',
 					label: 'label',
@@ -376,7 +457,7 @@
 							},
 							{
 								id: 6,
-								label: '拉丁数字',
+								label: '数字',
 							},
 							{
 								id: 7,
@@ -404,13 +485,13 @@
 		methods: {
 			toggleLayer() {
 				this.isLayerout = !this.isLayerout
-            },
-            formatNumber(num: any) {
-                // Keep 2 decimal places
-                return parseFloat(num).toFixed(2);
-            },
+			},
+			formatNumber(num: any) {
+				// Keep 2 decimal places
+				return parseFloat(num).toFixed(2);
+			},
 			//由用户名字生成颜色
-			extractColorByName(name:any) {
+			extractColorByName(name: any) {
 				var temp = [];
 				temp.push("#");
 				for (let index = 0; index < name.length; index++) {
@@ -462,10 +543,10 @@
 			},
 			mergePoint() {
 				svgEditor?.setTool('mergePoint')
-            },
-            ruler() {
-                svgEditor?.setTool('ruler')
-            },
+			},
+			ruler() {
+				svgEditor?.setTool('ruler')
+			},
 			send() {
 				const svgPath = this.svgpath;
 
@@ -618,16 +699,16 @@
 				// 	svgEditor.acceptSVG(msg.svg, msg.cmt)
 				// // console.log('FE:WebSocket:message',e)
 				const msg = JSON.parse(e.data.toString());
-            // console.log(msg)
-            // console.log('FE:WebSocket:message',msg.msg)
-				if(svgEditor)
+				// console.log(msg)
+				// console.log('FE:WebSocket:message',msg.msg)
+				if (svgEditor)
 					svgEditor.acceptSVG(msg.svg)
-				this.list= []
+				this.list = []
 				let comment = svgEditor!.transCmt()
 				console.log(comment)
 				for (let i = 0; i < comment.length; i++) {
 					console.log("111")
-					var mark = { gui_id: comment[i], gui_mark: comment[i+1]} 
+					var mark = { gui_id: comment[i], gui_mark: comment[i + 1] }
 					i++
 					this.list.push(mark)
 				}
@@ -665,35 +746,35 @@
 					this.showInputBox = svgEditor?.ifMarked!
 					this.showInputBox2 = svgEditor?.ifMarkedCanvas!
 					this.mouseTextPos = svgEditor?.textPoint!
-                    this.markedId = svgEditor?.markedId!
-                    this.pointPos = svgEditor!.pointPos
-                    if (this.pointPos) {
-                        let posSegment = svgEditor!.posSegment
-                        this.pointx1 = posSegment[0]
-                        this.pointy1 = posSegment[1]
-                    }
-                    this.linePos = svgEditor!.linePos
-                    if (this.linePos) {
-                        let posSegment = svgEditor!.posSegment
-                        this.pointx1 = posSegment[0]
-                        this.pointy1 = posSegment[1]
-                        this.pointx2 = posSegment[2]
-                        this.pointy2 = posSegment[3]
-                        this.length1 = posSegment[4]
-                        this.angle1 = posSegment[5]
-                    }
-                    this.curvePos = svgEditor!.curvePos
-                    if (this.curvePos) {
-                        let posSegment = svgEditor!.posSegment
-                        this.pointx1 = posSegment[0]
-                        this.pointy1 = posSegment[1]
-                        this.pointx2 = posSegment[2]
-                        this.pointy2 = posSegment[3]
-                        this.length1 = posSegment[4]
-                        this.length2 = posSegment[5]
-                        this.angle1 = posSegment[6]
-                        this.angle2 = posSegment[7]
-                    }
+					this.markedId = svgEditor?.markedId!
+					this.pointPos = svgEditor!.pointPos
+					if (this.pointPos) {
+						let posSegment = svgEditor!.posSegment
+						this.pointx1 = posSegment[0]
+						this.pointy1 = posSegment[1]
+					}
+					this.linePos = svgEditor!.linePos
+					if (this.linePos) {
+						let posSegment = svgEditor!.posSegment
+						this.pointx1 = posSegment[0]
+						this.pointy1 = posSegment[1]
+						this.pointx2 = posSegment[2]
+						this.pointy2 = posSegment[3]
+						this.length1 = posSegment[4]
+						this.angle1 = posSegment[5]
+					}
+					this.curvePos = svgEditor!.curvePos
+					if (this.curvePos) {
+						let posSegment = svgEditor!.posSegment
+						this.pointx1 = posSegment[0]
+						this.pointy1 = posSegment[1]
+						this.pointx2 = posSegment[2]
+						this.pointy2 = posSegment[3]
+						this.length1 = posSegment[4]
+						this.length2 = posSegment[5]
+						this.angle1 = posSegment[6]
+						this.angle2 = posSegment[7]
+					}
 					// this.showCommentBox = svgEditor?.isMarked!
 					// if(this.showCommentBox){
 					//     this.comment = svgEditor!.showComment(this.markedId)!
