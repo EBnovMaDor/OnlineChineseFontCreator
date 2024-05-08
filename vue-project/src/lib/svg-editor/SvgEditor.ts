@@ -1771,11 +1771,11 @@ export default class SvgEditor {
 
                 }
                 else if (this._currentTool != 'mark' && (!e.ctrlKey)) {
-                    // this._ifSend = 1
-                    // // console.log("我是ts里的ifsend", this._ifSend)
-                    // for (let element of this._gui!.selectedElements.values()) {
-                    //     element.isSelected = false
-                    // }
+                    this._ifSend = 1
+                    // console.log("我是ts里的ifsend", this._ifSend)
+                    for (let element of this._gui!.selectedElements.values()) {
+                        element.isSelected = false
+                    }
                 }
 
                 this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))

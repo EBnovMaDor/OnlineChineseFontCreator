@@ -91,7 +91,9 @@ export default defineComponent({
             length1 : 0,
             length2 : 0,
             angle1 : 0,
-            angle2 : 0
+            angle2 : 0,
+            svg_cnt : 1,
+            character : "大"
         }
     },
     mounted() {
@@ -321,11 +323,17 @@ export default defineComponent({
                         svgEditor.ifSend = 0
                         let segment = svgEditor.transSVG()
                         // console.log("我是vue里的segment",segment)
+                        // ws.send(JSON.stringify({
+                        //     id: new Date().getTime(),
+                        //     user: this.username,
+                        //     svg: segment
+                        // }))
                         ws.send(JSON.stringify({
-                            id: new Date().getTime(),
-                            user: this.username,
-                            svg: segment
+                            font : this.character,
+                            svg_id: this.svg_cnt,
+                            svg:segment
                         }))
+                        this.svg_cnt = this.svg_cnt+1
                         // console.log("我是vue里的send")
                     }
                 }
