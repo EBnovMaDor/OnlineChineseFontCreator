@@ -9,7 +9,7 @@ const db_config = {
 let connect = mysql.createConnection(db_config);
 class svgDatabase {
     static addSvg(list) {
-        let sqlQuery = 'insert into svg (font,svg_id,startPointX,startPointY,endPointX,endPointY,line,isClose) values (?,?,?,?,?,?,?,?)'
+        let sqlQuery = 'insert into svg (font,svg_id,startPointX,startPointY,endPointX,endPointY,line,isClose,fill) values (?,?,?,?,?,?,?,?,?)'
         connect.query(sqlQuery, list, (error, results, fields) => {
             if (error) {
                 console.error('Error inserting data:', error);
@@ -21,7 +21,19 @@ class svgDatabase {
     }
 
     static updateSvg(list) {
-        let sqlQuery = 'update svg set startPointX = ?,startPointY = ?,endPointX = ?,endPointY = ?,line = ?,isClose = ? where font = ? and svg_id = ?'
+        let sqlQuery = 'update svg set startPointX = ?,startPointY = ?,endPointX = ?,endPointY = ?,line = ?,isClose = ?,fill = ? where font = ? and svg_id = ?'
+        connect.query(sqlQuery, list, (error, results, fields) => {
+            if (error) {
+                console.error('Error inserting data:', error);
+                return;
+            }
+            console.log('Data update successfully.');
+        });
+        return;
+    }
+
+    static updateSvgFill(list) {
+        let sqlQuery = 'update svg set fill = ? where font = ? and svg_id = ?'
         connect.query(sqlQuery, list, (error, results, fields) => {
             if (error) {
                 console.error('Error inserting data:', error);

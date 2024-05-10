@@ -87,7 +87,7 @@ export default class BaseBufferClosedPath implements BaseBufferElement {
         }
 
         this.konvaElement.data(allData)
-        this.konvaElement.fill('black')
+        this.konvaElement.fill(this.config.fill!)
         this.konvaElement.opacity(this.config.opacity!)
         this.konvaElement.strokeWidth(this.config.strokeWidth)
     }

@@ -22,6 +22,7 @@
         <el-button type="primary" @click="ruler"> ruler </el-button>
         <el-button type="primary" @click="deleteMark"> deletemark </el-button>
         <el-button type="primary" @click="shapeMark"> shapeMark </el-button>
+        <el-button type="primary" @click="changeFill"> changeFill </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
         <div v-if="pointPos">点的坐标 x: {{ pointx1 }}, y:{{ pointy1 }}</div>
@@ -179,6 +180,9 @@ export default defineComponent({
         },
         shapeMark() {
             svgEditor?.setTool('shapeMark')
+        },
+        changeFill() {
+            svgEditor?.setTool('changeFill')
         },
         markText() {
             svgEditor?.setTool('markText')
@@ -341,8 +345,10 @@ export default defineComponent({
                                 op: segment[i][0],
                                 font: this.font,
                                 svg_id: segment[i][1],
-                                svg:segment[i][2]
+                                svg:segment[i][2],
+                                fill :segment[i][3]
                             }))
+                            console.log(segment[i][3])
                         }
                         else if(segment[i][0]=='add'){
                             // console.log("add",segment[i])
@@ -350,8 +356,10 @@ export default defineComponent({
                                 op: segment[i][0],
                                 font: this.font,
                                 svg_id: segment[i][1],
-                                svg:segment[i][2]
+                                svg:segment[i][2],
+                                fill :segment[i][3]
                             }))
+                            console.log(segment[i][3])
                         }
                         else if(segment[i][0]=='delete'){
                             // console.log("delete","i",i,segment[i])
@@ -359,6 +367,15 @@ export default defineComponent({
                                 op: segment[i][0],
                                 font: this.font,
                                 svg_id: segment[i][1],
+                            }))
+                        }
+                        else if(segment[i][0]=='changeFill'){
+                            console.log("changeFill","i",i,segment[i])
+                            ws.send(JSON.stringify({
+                                op: segment[i][0],
+                                font: this.font,
+                                svg_id: segment[i][1],
+                                fill: segment[i][2]
                             }))
                         }
                     }

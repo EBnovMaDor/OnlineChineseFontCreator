@@ -100,8 +100,9 @@ function handleMessage(msg) {
     const endPointY = valuesArr[3]
     const lines = JSON.stringify(valuesArr[4])
     const isClose = valuesArr[5].toString()
+    const fill = jsonObj.fill.toString()
     // const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose]
-    const arr = [startPointX, startPointY, endPointX, endPointY, lines, isClose, font, svg_id]
+    const arr = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font, svg_id]
     // const arr2 = [jsonObj.font[0], jsonObj.svg_id]
     svgDatabase.updateSvg(arr)
     let e = new Object()
@@ -114,6 +115,7 @@ function handleMessage(msg) {
     e.endPointY = endPointY
     e.line = lines
     e.isClose = isClose
+    e.fill = fill
     // console.log("e:", e)
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
@@ -128,8 +130,9 @@ function handleMessage(msg) {
     const endPointY = valuesArr[3]
     const lines = JSON.stringify(valuesArr[4])
     const isClose = valuesArr[5].toString()
-    const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose]
-    const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose, font, svg_id]
+    const fill = jsonObj.fill.toString()
+    const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose,fill]
+    const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font, svg_id]
     const arr2 = [jsonObj.font[0], jsonObj.svg_id]
     svgDatabase.countSvg(arr2).then(count => {
       // console.log('Count:', res);
@@ -150,8 +153,9 @@ function handleMessage(msg) {
     e.endPointY = endPointY
     e.line = lines
     e.isClose = isClose
+    e.fill = fill
 
-    console.log("e:", lines)
+    // console.log("e:", lines)
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
     })
@@ -165,6 +169,20 @@ function handleMessage(msg) {
     e.svg_id = svg_id
     e.font = font
     // console.log("e:", e)
+    server.clients.forEach((c) => {
+      c.send(JSON.stringify(e));
+    })
+  }
+  else if(op == 'changeFill'){
+    const svg_id = jsonObj.svg_id
+    const fill = jsonObj.fill.toString()
+    const arr = [fill,font, svg_id]
+    svgDatabase.updateSvgFill(arr)
+    let e = new Object()
+    e.op = 'changeFill'
+    e.svg_id = svg_id
+    e.font = font
+    e.fill = fill
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
     })
