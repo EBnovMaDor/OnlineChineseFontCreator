@@ -10,6 +10,7 @@ import type GUIMarkLine from "./GUIMarkLine";
 
 export default class GUIStraightLine implements GUILine {
     private _guiElementId: number = 0
+    private _guiSegmentId: number = 0
 
     private _baseBufferElement: BaseBufferLine
     private _virtualBufferElement: BaseBufferLine | null = null
@@ -170,7 +171,13 @@ export default class GUIStraightLine implements GUILine {
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
     }
+    get guiSegmentId() {
+        return this._guiSegmentId
+    }
 
+    set guiSegmentId(guiSegmentId: number) {
+        this._guiSegmentId = guiSegmentId
+    }
     get isVisible() {
         return this._isVisible
     }

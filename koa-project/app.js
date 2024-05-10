@@ -77,35 +77,97 @@ function handleConnection(ws) {
 function handleMessage(msg) {
 
   const jsonObj = JSON.parse(msg);
-  const valuesArr = Object.values(jsonObj.svg[0]);
-  const startPointX = valuesArr[0]
-  const startPointY = valuesArr[1]
-  const endPointX = valuesArr[2]
-  const endPointY = valuesArr[3]
-  const lines = JSON.stringify(valuesArr[4])
-  const isClose = valuesArr[5].toString()
-  const arr = [jsonObj.font[0],jsonObj.svg_id,startPointX,startPointY,endPointX,endPointY,lines,isClose]
-  const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose, jsonObj.font[0], jsonObj.svg_id]
-  const arr2 = [jsonObj.font[0], jsonObj.svg_id]
+  const op = jsonObj.op
+  const font = jsonObj.font
+  if (op == 'i') {
+    svgDatabase.findSvg(font).then(res => {
+      // console.log('Count:', res);
+      for (let e of res) {
+        e.op = 'edit'
+        // console.log("e:", e.toString())
+        server.clients.forEach((c) => {
+          c.send(JSON.stringify(e));
+        })
+      }
+    })
+  }
+  else if (op == 'edit') {
+    const svg_id = jsonObj.svg_id
+    const valuesArr = Object.values(jsonObj.svg[0]);
+    const startPointX = valuesArr[0]
+    const startPointY = valuesArr[1]
+    const endPointX = valuesArr[2]
+    const endPointY = valuesArr[3]
+    const lines = JSON.stringify(valuesArr[4])
+    const isClose = valuesArr[5].toString()
+    // const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose]
+    const arr = [startPointX, startPointY, endPointX, endPointY, lines, isClose, font, svg_id]
+    // const arr2 = [jsonObj.font[0], jsonObj.svg_id]
+    svgDatabase.updateSvg(arr)
+    let e = new Object()
+    e.op = 'edit'
+    e.svg_id = svg_id
+    e.font = font
+    e.startPointX = startPointX
+    e.startPointY = startPointY
+    e.endPointX = endPointX
+    e.endPointY = endPointY
+    e.line = lines
+    e.isClose = isClose
+    // console.log("e:", e)
+    server.clients.forEach((c) => {
+      c.send(JSON.stringify(e));
+    })
+  }
+  else if(op == 'add'){
+    const svg_id = jsonObj.svg_id
+    const valuesArr = Object.values(jsonObj.svg[0]);
+    const startPointX = valuesArr[0]
+    const startPointY = valuesArr[1]
+    const endPointX = valuesArr[2]
+    const endPointY = valuesArr[3]
+    const lines = JSON.stringify(valuesArr[4])
+    const isClose = valuesArr[5].toString()
+    const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose]
+    const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose, font, svg_id]
+    const arr2 = [jsonObj.font[0], jsonObj.svg_id]
+    svgDatabase.countSvg(arr2).then(count => {
+      // console.log('Count:', res);
+      if(count > 0){
+        svgDatabase.updateSvg(arr1)
+      }
+      else{
+        svgDatabase.addSvg(arr)
+      }
+    })
+    let e = new Object()
+    e.op = 'edit'
+    e.svg_id = svg_id
+    e.font = font
+    e.startPointX = startPointX
+    e.startPointY = startPointY
+    e.endPointX = endPointX
+    e.endPointY = endPointY
+    e.line = lines
+    e.isClose = isClose
 
-  svgDatabase.countSvg(arr2).then(count => {
-    console.log('Count:', count);
-    if(count == 0){
-      svgDatabase.addSvg(arr)
-    }
-    else if (count ==1){
-      svgDatabase.updateSvg(arr1)
-    }
-    else{
-      svgDatabase.deleteSvg(arr2)
-      svgDatabase.addSvg(arr)
-    }
-  }).catch(error => {
-    console.error(error);
-  });
-  
-  server.clients.forEach((c) => {
-    c.send(msg.toString());
-  })
+    console.log("e:", lines)
+    server.clients.forEach((c) => {
+      c.send(JSON.stringify(e));
+    })
+  }
+  else if(op == 'delete'){
+    const svg_id = jsonObj.svg_id
+    const arr = [font, svg_id]
+    svgDatabase.deleteSvg(arr)
+    let e = new Object()
+    e.op = 'delete'
+    e.svg_id = svg_id
+    e.font = font
+    // console.log("e:", e)
+    server.clients.forEach((c) => {
+      c.send(JSON.stringify(e));
+    })
+  }
 }
 module.exports = app

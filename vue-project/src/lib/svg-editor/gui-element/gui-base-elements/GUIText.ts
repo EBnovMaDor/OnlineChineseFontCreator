@@ -16,6 +16,7 @@ import BaseBufferCircle from "../../base-buffer-element/BaseBufferCircle"
 export default class GUIText implements GUIBaseElement {
 
     private _guiElementId: number = 0
+    private _guiSegmentId: number = 0
 
     private _baseBufferElement: BaseBufferText
     private _virtualBufferElement: BaseBufferCircle | null = null
@@ -27,7 +28,7 @@ export default class GUIText implements GUIBaseElement {
     /** if a point is not a control point, then need following attributes */
     _isTangency: boolean = false
 
-    constructor(centerPoint: Point,text:string) {
+    constructor(centerPoint: Point, text: string) {
         this._baseBufferElement = new BaseBufferText(centerPoint, "", GlobalManager.instance.gui.pointGroup)
         this._baseBufferElement.text = text
         this._baseBufferElement.config = Object.assign({}, GUIAttrs.Text)
@@ -168,7 +169,13 @@ export default class GUIText implements GUIBaseElement {
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
     }
+    get guiSegmentId() {
+        return this._guiSegmentId
+    }
 
+    set guiSegmentId(guiSegmentId: number) {
+        this._guiSegmentId = guiSegmentId
+    }
 
     get isVisible() {
         return this._isVisible

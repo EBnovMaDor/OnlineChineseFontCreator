@@ -12,6 +12,7 @@ import type GUIBaseElement from "../interface/GUIBaseElement"
 export default class GUIOffPoint implements GUIBaseElement {
 
     private _guiElementId: number = 0
+    private _guiSegmentId: number = 0
     private _baseBufferElement: BaseBufferCircle
     private _virtualBufferElement: BaseBufferCircle | null = null
 
@@ -120,6 +121,14 @@ export default class GUIOffPoint implements GUIBaseElement {
     }
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
+    }
+
+    get guiSegmentId() {
+        return this._guiSegmentId
+    }
+
+    set guiSegmentId(guiSegmentId: number) {
+        this._guiSegmentId = guiSegmentId
     }
 
     get isVisible() {

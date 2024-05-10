@@ -6,9 +6,12 @@ import Point from "../../util/Point";
 import GlobalManager from "../../GlobalManager";
 import type GUILine from "../interface/GUILine";
 import RefreshSEBBoxEvent from "../../font-creator-event/RefreshSEBBoxEvent";
+import type GUIStraightLine from "./GUIStraightLine";
+import type GUIControlLine from "./GUIControlLine";
 
 export default class GUIMarkLine implements GUILine {
     private _guiElementId: number = 0
+    private _guiSegmentId: number = 0
 
     private _baseBufferElement: BaseBufferLine
     private _virtualBufferElement: BaseBufferLine | null = null
@@ -16,14 +19,14 @@ export default class GUIMarkLine implements GUILine {
     private _isSelected: boolean = false
     private _isVisible: boolean = true
 
-    private _fatherGUILine: GUILine | null = null
+    private _fatherGUILine: GUIStraightLine | GUIControlLine | null = null
     private _previousGUIPoint: GUIOnPoint | null = null
     private _nextGUIPoint: GUIOnPoint | null = null
-    private _comment:string =""
+    private _comment: string = ""
 
-    private _l:number = 0
+    private _l: number = 0
 
-    constructor(startPoint: Point, endPoint: Point, previousGUIPoint: GUIOnPoint | null = null, nextGUIPoint: GUIOnPoint | null = null, fatherGUILine : GUILine | null = null) {
+    constructor(startPoint: Point, endPoint: Point, previousGUIPoint: GUIOnPoint | null = null, nextGUIPoint: GUIOnPoint | null = null, fatherGUILine: GUIStraightLine | GUIControlLine | null = null) {
         this._baseBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.lineGroup)
         this._virtualBufferElement = new BaseBufferLine(startPoint, endPoint, GlobalManager.instance.gui.virtualLineGroup)
 
@@ -39,11 +42,12 @@ export default class GUIMarkLine implements GUILine {
         this._previousGUIPoint = previousGUIPoint
         this._nextGUIPoint = nextGUIPoint
         this._fatherGUILine = fatherGUILine
+        this._nextGUIPoint!.baseBufferElement.config = Object.assign({}, GUIAttrs.MarkingOnPoint)
     }
 
     delete() {
         let { gui } = GlobalManager.instance
-        console.log("delete in guimarkline")
+        // console.log("delete in guimarkline")
         gui.deleteGUIBaseElement(this)
     }
 
@@ -65,18 +69,18 @@ export default class GUIMarkLine implements GUILine {
         this._baseBufferElement.draw()
     }
 
-    get comment(){
-            return this._comment
+    get comment() {
+        return this._comment
     }
 
-    set comment(comment:string){
+    set comment(comment: string) {
         this._comment = comment
     }
-    set l(l:number){
+    set l(l: number) {
         this._l = l
     }
 
-    get l(){
+    get l() {
         return this._l
     }
 
@@ -101,11 +105,11 @@ export default class GUIMarkLine implements GUILine {
         this.notifyObservers()
     }
 
-    get previousMarkLine(){
+    get previousMarkLine() {
         return null
     }
 
-    get nextMarkLine(){
+    get nextMarkLine() {
         return null
     }
 
@@ -125,7 +129,7 @@ export default class GUIMarkLine implements GUILine {
         this._nextGUIPoint = nextGUIPoint
     }
 
-    set fatherGUILine(guiLine:GUILine | null){
+    set fatherGUILine(guiLine: GUIStraightLine | GUIControlLine | null) {
         this._fatherGUILine = guiLine
     }
 
@@ -137,7 +141,7 @@ export default class GUIMarkLine implements GUILine {
         return this._nextGUIPoint
     }
 
-    get fatherGUILine(){
+    get fatherGUILine() {
         return this._fatherGUILine
     }
 
@@ -147,6 +151,14 @@ export default class GUIMarkLine implements GUILine {
 
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
+    }
+
+    get guiSegmentId() {
+        return this._guiSegmentId
+    }
+
+    set guiSegmentId(guiSegmentId: number) {
+        this._guiSegmentId = guiSegmentId
     }
 
     get isVisible() {

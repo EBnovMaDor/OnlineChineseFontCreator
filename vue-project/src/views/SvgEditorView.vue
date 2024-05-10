@@ -24,18 +24,26 @@
         <el-button type="primary" @click="shapeMark"> shapeMark </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
         <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
-        <div v-if = "pointPos">点的坐标 x: {{ pointx1 }}, y:{{ pointy1 }}</div>
-        <div v-if = "linePos">直线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }}); 直线的长度 : {{ length1 }} ; 线的角度: {{ angle1 }}度</div>
-        <div v-if = "curvePos">曲线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }}); 控制线长度：{{ length1 }} ; {{ length2 }} ; 线的角度: {{ angle1 }} 度; {{ angle2 }}度</div>
+        <div v-if="pointPos">点的坐标 x: {{ pointx1 }}, y:{{ pointy1 }}</div>
+        <div v-if="linePos">直线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }}); 直线的长度
+            : {{ length1 }} ; 线的角度: {{ angle1 }}度</div>
+        <div v-if="curvePos">曲线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }});
+            控制线长度：{{ length1 }} ; {{ length2 }} ; 线的角度: {{ angle1 }} 度; {{ angle2 }}度</div>
     </div>
     <div>
-    <div v-if="showInputBox"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput">提交</el-button></div>
-    <div v-if="showInputBox2"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button @click="submitInput2">提交</el-button></div>
-    <!-- <div v-else>empty</div> -->
-    <!-- <div v-if="showCommentBox">元素编号：{{ markedId }} ; 标注：{{ comment }}<el-button @click="editComment">编辑</el-button></div> -->
-    <div v-for="item in list" :key="item.gui_id"><div :class="(item.gui_id == markedId && showInputBox == true)? 'back-red' : 'back-blue'"  @mouseenter="markShow(item.gui_id)" @mouseleave="markHide(item.gui_id)">元素编号：{{ item.gui_id }} ; 标注：{{ item.gui_mark }}<el-button @click="editComment(item.gui_id)">编辑</el-button>
-    ><el-button @click="deleteComment(item.gui_id)">删除</el-button></div></div>
-</div>
+        <div v-if="showInputBox"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button
+                @click="submitInput">提交</el-button></div>
+        <div v-if="showInputBox2"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button
+                @click="submitInput2">提交</el-button></div>
+        <!-- <div v-else>empty</div> -->
+        <!-- <div v-if="showCommentBox">元素编号：{{ markedId }} ; 标注：{{ comment }}<el-button @click="editComment">编辑</el-button></div> -->
+        <div v-for="item in list" :key="item.gui_id">
+            <div :class="(item.gui_id == markedId && showInputBox == true) ? 'back-red' : 'back-blue'"
+                @mouseenter="markShow(item.gui_id)" @mouseleave="markHide(item.gui_id)">元素编号：{{ item.gui_id }} ; 标注：{{
+                    item.gui_mark }}<el-button @click="editComment(item.gui_id)">编辑</el-button>
+                ><el-button @click="deleteComment(item.gui_id)">删除</el-button></div>
+        </div>
+    </div>
     <div>
 
     </div>
@@ -56,8 +64,8 @@ export default defineComponent({
 
     data() {
         return {
-            showInputBox:false,
-            showInputBox2:false,
+            showInputBox: false,
+            showInputBox2: false,
             // showCommentBox:false,
             inputValue: "",
             fps: 60,
@@ -79,21 +87,21 @@ export default defineComponent({
             username: '',
             ifSend: 0,
             markedId: -1,
-            comment:"1",
+            comment: "1",
             list: [] as any,
-            pointPos:false,
-            linePos:false,
+            pointPos: false,
+            linePos: false,
             curvePos: false,
-            pointx1 : 0,
-            pointx2 : 0,
-            pointy1 : 0,
-            pointy2 : 0,
-            length1 : 0,
-            length2 : 0,
-            angle1 : 0,
-            angle2 : 0,
-            svg_cnt : 1,
-            character : "大"
+            pointx1: 0,
+            pointx2: 0,
+            pointy1: 0,
+            pointy2: 0,
+            length1: 0,
+            length2: 0,
+            angle1: 0,
+            angle2: 0,
+            // svg_cnt: 1,
+            font: "大"
         }
     },
     mounted() {
@@ -111,7 +119,7 @@ export default defineComponent({
     },
     methods: {
         importSVG() {
-            svgEditor?.importSVG(this.svgpath)
+            svgEditor?.importSVG()
         },
         exportSVG() {
             svgEditor?.exportSVG()
@@ -152,51 +160,49 @@ export default defineComponent({
         addTriangle() {
             svgEditor?.setTool('addTriangle')
         },
-        ruler(){
+        ruler() {
             svgEditor?.setTool('ruler')
         },
         send() {
             const svgPath = this.svgpath;
-
             if (!svgPath.trim().length) {
                 return;
             }
-
             ws.send(JSON.stringify({
                 id: new Date().getTime(),
                 user: this.username,
                 msg: this.svgpath
             }))
         },
-        mark(){
+        mark() {
             svgEditor?.setTool('mark')
         },
-        shapeMark(){
+        shapeMark() {
             svgEditor?.setTool('shapeMark')
         },
-        markText(){
+        markText() {
             svgEditor?.setTool('markText')
         },
-        editComment(id : number){
+        editComment(id: number) {
             svgEditor!.markedId = id
             svgEditor!.ifMarked = true
         },
-        deleteComment(id:number){
+        deleteComment(id: number) {
             // svgEditor!.unMark(this.markedId)
-            svgEditor?.markComment(this.markedId,"")
+            svgEditor?.markComment(this.markedId, "")
             svgEditor!.ifSend = 1
             // this.markedId = 
         },
-        submitInput(){
-            console.log(this.inputValue.length);
-            if(this.inputValue.length == 0){
+        submitInput() {
+            // console.log(this.inputValue.length);
+            if (this.inputValue.length == 0) {
                 // console.log("输入不能为空")
                 svgEditor!.unMark(this.markedId)
-                svgEditor?.markComment(this.markedId,this.inputValue)
+                svgEditor!.markComment(this.markedId, this.inputValue)
                 return
             }
-            console.log(this.markedId)
-            svgEditor?.markComment(this.markedId,this.inputValue)
+            // console.log(this.markedId)
+            svgEditor!.markComment(this.markedId, this.inputValue)
             // console.log("wozaisubmit",this.ifSend)
             svgEditor!.ifSend = 1
             // 隐藏输入框
@@ -204,25 +210,25 @@ export default defineComponent({
             svgEditor!.ifMarked = false
             // this.showInputBox=false;
         },
-        submitInput2(){
-            console.log(this.inputValue.length);
-            if(this.inputValue.length == 0){
+        submitInput2() {
+            // console.log(this.inputValue.length);
+            if (this.inputValue.length == 0) {
                 console.log("输入不能为空")
                 // svgEditor!.unMark(this.markedId)
                 // svgEditor?.markComment(this.markedId,this.inputValue)
                 return
             }
-            svgEditor?.markOnCanvas(svgEditor.markPoint.x,svgEditor.markPoint.y,this.inputValue)
+            svgEditor?.markOnCanvas(svgEditor.markPoint.x, svgEditor.markPoint.y, this.inputValue)
             svgEditor!.ifSend = 1
             // 隐藏输入框
             this.inputValue = ""
             svgEditor!.ifMarkedCanvas = false
             // this.showInputBox=false;
         },
-        markShow(id:number){
+        markShow(id: number) {
             svgEditor!.Mark(id)
         },
-        markHide(id:number){
+        markHide(id: number) {
             svgEditor!.unMark(id)
         },
         handleWsOpen(e: any) {
@@ -235,28 +241,30 @@ export default defineComponent({
             console.log('FE:WebSocket:error', e)
         },
         handleWsMessage(e: any) {
-            const msg = JSON.parse(e.data.toString());
-            // console.log(msg)
-            // console.log('FE:WebSocket:message',msg.msg)
-            if(svgEditor)
-                svgEditor.acceptSVG(msg.svg)
+            const msg = JSON.parse(e.data);
+            // console.log('FE:WebSocket:message',msg)
+            if (msg.font == this.font) {
+                svgEditor!.handleSVG(msg)
+            }
+            // if(svgEditor)
+            //     svgEditor.acceptSVG(msg.svg)
             this.list= []
             let comment = svgEditor!.transCmt()
-            console.log(comment)
+            // console.log(comment)
             for (let i = 0; i < comment.length; i++) {
-                console.log("111")
+                // console.log("111")
                 var mark = { gui_id: comment[i], gui_mark: comment[i+1]} 
                 i++
                 this.list.push(mark)
             }
-            console.log(this.list)
+            // console.log(this.list)
         },
         changeActive(e: MouseEvent) {
             // console.log(e);
         },
         removeActive(e: MouseEvent) {
             // if (e.currentTarget)
-                // (e.currentTarget as HTMLElement).className = '';
+            // (e.currentTarget as HTMLElement).className = '';
         },
         getInfo() {
             setTimeout(() => {
@@ -284,13 +292,13 @@ export default defineComponent({
                 this.showInputBox2 = svgEditor?.ifMarkedCanvas!
                 this.markedId = svgEditor?.markedId!
                 this.pointPos = svgEditor!.pointPos
-                if(this.pointPos){
+                if (this.pointPos) {
                     let posSegment = svgEditor!.posSegment
                     this.pointx1 = posSegment[0]
                     this.pointy1 = posSegment[1]
                 }
                 this.linePos = svgEditor!.linePos
-                if(this.linePos){
+                if (this.linePos) {
                     let posSegment = svgEditor!.posSegment
                     this.pointx1 = posSegment[0]
                     this.pointy1 = posSegment[1]
@@ -300,7 +308,7 @@ export default defineComponent({
                     this.angle1 = posSegment[5]
                 }
                 this.curvePos = svgEditor!.curvePos
-                if(this.curvePos){
+                if (this.curvePos) {
                     let posSegment = svgEditor!.posSegment
                     this.pointx1 = posSegment[0]
                     this.pointy1 = posSegment[1]
@@ -316,26 +324,52 @@ export default defineComponent({
                 //     this.comment = svgEditor!.showComment(this.markedId)!
                 // }
                 this.ifSend = svgEditor?.ifSend!
-                if (this.ifSend == 2) {
-                    // console.log("我是vue里的ifsend", this.ifSend)
-                    // console.log("svgEditor",svgEditor)
-                    if (svgEditor) {
-                        svgEditor.ifSend = 0
-                        let segment = svgEditor.transSVG()
-                        // console.log("我是vue里的segment",segment)
-                        // ws.send(JSON.stringify({
-                        //     id: new Date().getTime(),
-                        //     user: this.username,
-                        //     svg: segment
-                        // }))
-                        ws.send(JSON.stringify({
-                            font : this.character,
-                            svg_id: this.svg_cnt,
-                            svg:segment
-                        }))
-                        this.svg_cnt = this.svg_cnt+1
-                        // console.log("我是vue里的send")
+                if (this.ifSend == 1) {
+                    svgEditor!.ifSend = 0
+                    let segment = svgEditor!.msgSend
+                    for (let i = 0; i < segment.length; i++) {
+                        if (segment[i][0] == 'i') {
+                            // console.log("import svg!")
+                            ws.send(JSON.stringify({
+                                op: segment[i][0],
+                                font: this.font
+                            }))
+                        }
+                        else if(segment[i][0]=='edit'){
+                            console.log("edit!","i",i,segment)
+                            ws.send(JSON.stringify({
+                                op: segment[i][0],
+                                font: this.font,
+                                svg_id: segment[i][1],
+                                svg:segment[i][2]
+                            }))
+                        }
+                        else if(segment[i][0]=='add'){
+                            // console.log("add",segment[i])
+                            ws.send(JSON.stringify({
+                                op: segment[i][0],
+                                font: this.font,
+                                svg_id: segment[i][1],
+                                svg:segment[i][2]
+                            }))
+                        }
+                        else if(segment[i][0]=='delete'){
+                            // console.log("delete","i",i,segment[i])
+                            ws.send(JSON.stringify({
+                                op: segment[i][0],
+                                font: this.font,
+                                svg_id: segment[i][1],
+                            }))
+                        }
                     }
+
+                    // let segment = svgEditor!.transSVG()
+                    // ws.send(JSON.stringify({
+                    //     font : this.font,
+                    //     svg_id: ,
+                    //     svg:segment
+                    // }))
+                    // this.svg_cnt = this.svg_cnt+1
                 }
                 this.getInfo()
             }, 50)
@@ -359,15 +393,19 @@ export default defineComponent({
 .logo.vue:hover {
     filter: drop-shadow(0 0 2em #42b883aa);
 }
-.back-red{		/* 红色背景 */
-	/* width: 1000px;
+
+.back-red {
+    /* 红色背景 */
+    /* width: 1000px;
 	height: 100px; */
-	background-color: orange;
+    background-color: orange;
 }
-.back-blue{		/* 蓝色背景 */
-	/* width: 100px; */
-	/* height: 100px; */
-	background-color: white;
+
+.back-blue {
+    /* 蓝色背景 */
+    /* width: 100px; */
+    /* height: 100px; */
+    background-color: white;
 }
 
 #canvas {

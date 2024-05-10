@@ -15,6 +15,7 @@ export default class GUICubicCurve implements GUILine {
         return 'GUILine'
     }
     private _guiElementId: number = 0
+    private _guiSegmentId: number = 0
     private _isVisible: boolean = true
 
     private _baseBufferElement: BaseBufferCubicCurve
@@ -180,6 +181,14 @@ export default class GUICubicCurve implements GUILine {
 
     set guiElementId(guiElementId: number) {
         this._guiElementId = guiElementId
+    }
+
+    get guiSegmentId() {
+        return this._guiSegmentId
+    }
+
+    set guiSegmentId(guiSegmentId: number) {
+        this._guiSegmentId = guiSegmentId
     }
 
     get isVisible() {

@@ -19,6 +19,7 @@ class svgDatabase {
         });
         return;
     }
+
     static updateSvg(list) {
         let sqlQuery = 'update svg set startPointX = ?,startPointY = ?,endPointX = ?,endPointY = ?,line = ?,isClose = ? where font = ? and svg_id = ?'
         connect.query(sqlQuery, list, (error, results, fields) => {
@@ -43,6 +44,20 @@ class svgDatabase {
                 var res = JSON.parse(JSON.stringify(results));
                 // console.log(res[0]['count(*)']);
                 resolve(res[0]['count(*)']);
+            });
+        });
+    }
+
+    static findSvg(list) {
+        return new Promise((resolve, reject) => {
+            let sqlQuery = 'select * from svg where font = ?'
+            connect.query(sqlQuery, list, (error, results, fields) => {
+                if (error) {
+                    console.error('Error inserting data:', error);
+                    return;
+                }
+                var res = JSON.parse(JSON.stringify(results));
+                resolve(res);
             });
         });
     }

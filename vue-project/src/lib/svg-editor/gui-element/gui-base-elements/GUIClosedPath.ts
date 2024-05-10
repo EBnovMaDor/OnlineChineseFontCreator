@@ -4,6 +4,7 @@ import type GUIElement from "../interface/GUIElement";
 
 export default class GUIClosedPath implements GUIElement {
     private _guiElementId: number = 0;
+    private _guiSegmentId: number = 0;
     private _baseBufferElement: BaseBufferElement;
     private _isVisible: boolean;
 
@@ -23,7 +24,13 @@ export default class GUIClosedPath implements GUIElement {
     set guiElementId(id: number) {
         this._guiElementId = id;
     }
+    get guiSegmentId() {
+        return this._guiSegmentId
+    }
 
+    set guiSegmentId(guiSegmentId: number) {
+        this._guiSegmentId = guiSegmentId
+    }
     get isVisible() {
         return this._isVisible;
     }
