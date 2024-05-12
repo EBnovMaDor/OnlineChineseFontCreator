@@ -6,7 +6,7 @@
     <div><input type="text" v-model="fontSize" placeholder="字号"><el-button type="primary"
             @click="submitInput3">提交</el-button></div>
     <div style="text-align: center">
-        <div class="mousetest" id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div>
+        <div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div>
         <el-button type="primary" @click="sendMessage"> 导入 </el-button>
         <el-button type="primary" @click="typesetting"> 排版 </el-button>
         <el-input type="textarea" :rows="5" placeholder="请输入" v-model="word" style="margin-bottom:20px">

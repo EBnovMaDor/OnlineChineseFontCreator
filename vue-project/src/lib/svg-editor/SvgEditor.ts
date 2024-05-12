@@ -121,7 +121,7 @@ export default class SvgEditor {
         GlobalManager.instance.baseBuffer = this._baseBuffer
 
         /** 初始化GUI绘制区域 */
-        this._gui = new GUI(divId,true)
+        this._gui = new GUI(divId, true)
         GlobalManager.instance.gui = this._gui
 
         /** 初始化视口，宽高为世界宽高的一半，且居中，比例和gui比例保持一致 */
@@ -549,7 +549,6 @@ export default class SvgEditor {
         // this.saveSVG()
         return allSegements
     }
-
     public transCmt(): Array<any> {
         let allComments = []
         // console.log("this._gui!.guiBaseElements", this._gui!.guiBaseElements)
@@ -563,7 +562,6 @@ export default class SvgEditor {
         }
         return allComments
     }
-
     public acceptSVG() {
         for (let element of this._gui!.guiBaseElements.values()) {
             if (element instanceof GUIStraightLine || element instanceof GUICubicCurve || element instanceof GUIControlLine || element instanceof GUIOffPoint || element instanceof GUIOnPoint || element instanceof GUIText || element instanceof GUIMarkLine || element instanceof GUIRing) {
@@ -1563,7 +1561,8 @@ export default class SvgEditor {
                         let newX = 0, newY = 0
                         let startPoint
                         let startGUIPoint
-                        if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                        if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
+                            // 看x
                             if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
                                 newX = point2!.baseBufferElement.center.x
                                 newY = point2!.baseBufferElement.center.y
@@ -1578,6 +1577,7 @@ export default class SvgEditor {
                             }
                         }
                         else {
+                            // 看y
                             if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
                                 newX = point2!.baseBufferElement.center.x
                                 newY = point2!.baseBufferElement.center.y
@@ -1591,11 +1591,40 @@ export default class SvgEditor {
                                 startGUIPoint = point1
                             }
                         }
+                        // if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                        //     if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
+                        //         newX = point2!.baseBufferElement.center.x
+                        //         newY = point2!.baseBufferElement.center.y
+                        //         startPoint = new Point(newX, newY)
+                        //         startGUIPoint = point2
+                        //     }
+                        //     else {
+                        //         newX = point1!.baseBufferElement.center.x
+                        //         newY = point1!.baseBufferElement.center.y
+                        //         startPoint = new Point(newX, newY)
+                        //         startGUIPoint = point1
+                        //     }
+                        // }
+                        // else {
+                        //     if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
+                        //         newX = point2!.baseBufferElement.center.x
+                        //         newY = point2!.baseBufferElement.center.y
+                        //         startPoint = new Point(newX, newY)
+                        //         startGUIPoint = point2
+                        //     }
+                        //     else {
+                        //         newX = point1!.baseBufferElement.center.x
+                        //         newY = point1!.baseBufferElement.center.y
+                        //         startPoint = new Point(newX, newY)
+                        //         startGUIPoint = point1
+                        //     }
+                        // }
                         let endPoint = new Point(bufferX, bufferY)
                         let endGUIPoint = new GUIOnPoint(endPoint)
                         let markGUILine = new GUIMarkLine(startPoint, endPoint, startGUIPoint, endGUIPoint, guiStraightLine)
                         endGUIPoint.previousGUILine = markGUILine
-                        if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                        if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
+                            // 看x
                             if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
                                 guiStraightLine.nextMarkLine = markGUILine
                             }
@@ -1604,6 +1633,7 @@ export default class SvgEditor {
                             }
                         }
                         else {
+                            // 看y
                             if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
                                 guiStraightLine.nextMarkLine = markGUILine
                             }
@@ -1630,7 +1660,8 @@ export default class SvgEditor {
                         let newX = 0, newY = 0
                         let startPoint
                         let startGUIPoint
-                        if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                        if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
+                            // 看x
                             if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
                                 newX = point2!.baseBufferElement.center.x
                                 newY = point2!.baseBufferElement.center.y
@@ -1647,6 +1678,7 @@ export default class SvgEditor {
                             }
                         }
                         else {
+                            // 看y
                             if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
                                 newX = point2!.baseBufferElement.center.x
                                 newY = point2!.baseBufferElement.center.y
@@ -1666,7 +1698,8 @@ export default class SvgEditor {
                         let endGUIPoint = new GUIOnPoint(endPoint)
                         let markGUILine = new GUIMarkLine(startPoint, endPoint, startGUIPoint, endGUIPoint, fatherLine)
                         endGUIPoint.previousGUILine = markGUILine
-                        if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                        if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
+                            // 看x
                             if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
                                 guiCurve.nextMarkLine = markGUILine
                             }
@@ -1675,6 +1708,7 @@ export default class SvgEditor {
                             }
                         }
                         else {
+                            // 看y
                             if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
                                 guiCurve.nextMarkLine = markGUILine
                             }
@@ -1787,19 +1821,37 @@ export default class SvgEditor {
                         if (instanceOfGUILine(guiLine)) {
                             let point1 = guiLine?.previousGUIPoint
                             let point2 = guiLine?.nextGUIPoint
-                            if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                            if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
+                                // 看x
+                                //     if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
+                                //         guiCurve.nextMarkLine = markGUILine
+                                //     }
+                                //     else {
+                                //         guiCurve.previousMarkLine = markGUILine
+                                //     }
+                                let newY = this._multiSelectingRectPos.y1 - (point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) / (point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x) * (this._multiSelectingRectPos.x1 - bufferX)
+                                endGUIPoint.baseBufferElement.center.y = newY
                                 endGUIPoint.baseBufferElement.center.x = bufferX
-                                endGUIPoint.baseBufferElement.center.y = point1!.baseBufferElement.center.y
-                            }
-                            else if (point1!.baseBufferElement.center.x == point2!.baseBufferElement.center.x) {
-                                endGUIPoint.baseBufferElement.center.x = point1!.baseBufferElement.center.x
-                                endGUIPoint.baseBufferElement.center.y = bufferY
                             }
                             else {
+                                //     // 看y
                                 let newX = this._multiSelectingRectPos.x1 - (point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x) / (point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) * (this._multiSelectingRectPos.y1 - bufferY)
                                 endGUIPoint.baseBufferElement.center.x = newX
                                 endGUIPoint.baseBufferElement.center.y = bufferY
                             }
+                            // if (point1!.baseBufferElement.center.y == point2!.baseBufferElement.center.y) {
+                            //     endGUIPoint.baseBufferElement.center.x = bufferX
+                            //     endGUIPoint.baseBufferElement.center.y = point1!.baseBufferElement.center.y
+                            // }
+                            // else if (point1!.baseBufferElement.center.x == point2!.baseBufferElement.center.x) {
+                            //     endGUIPoint.baseBufferElement.center.x = point1!.baseBufferElement.center.x
+                            //     endGUIPoint.baseBufferElement.center.y = bufferY
+                            // }
+                            // else {
+                            //     let newX = this._multiSelectingRectPos.x1 - (point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x) / (point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) * (this._multiSelectingRectPos.y1 - bufferY)
+                            //     endGUIPoint.baseBufferElement.center.x = newX
+                            //     endGUIPoint.baseBufferElement.center.y = bufferY
+                            // }
                         }
                     }
                 }

@@ -53,7 +53,7 @@ export default class SvgPreviewer {
     private _svgWidth: Array<Array<any>> = [] // max, min
     private _svgPostion: Array<Array<number>> = [] // x,y
     private _punctuation: Array<string> = [',', '.', '。', ':']
-    private _lineSpace:number = 0
+    private _lineSpace: number = 0
     /** drawing */
     private _baseBuffer: BaseBuffer = new BaseBuffer();
     private _eventHandler: FontCreatorEventHandler = new FontCreatorEventHandler()
@@ -70,7 +70,7 @@ export default class SvgPreviewer {
     public static anim: Konva.Animation | null = null;
 
     constructor(divId: string) {
-        console.info("SvgEditor Init")
+        console.info("divId",divId)
         this.divId = divId
         GlobalManager.instance.baseBuffer = this._baseBuffer
 
@@ -215,20 +215,21 @@ export default class SvgPreviewer {
 
     public typeSetting(wordSSpacing: string, lineSSpacing: string, fontSSize: string) {
         let wordSpacing, lineSpacing, fontSize: number
+        if (fontSSize == '') fontSize = 1
+        else fontSize = Number(fontSSize)
         if (wordSSpacing == '') wordSpacing = 0
         else wordSpacing = Number(wordSSpacing)
         if (lineSSpacing == '')
-            lineSpacing = this._lineSpace
-        else lineSpacing = Number(lineSSpacing) + this._lineSpace
-        if (fontSSize == '') fontSize = 1
-        else fontSize = Number(fontSSize)
+            lineSpacing = this._lineSpace * fontSize
+        else lineSpacing = Number(lineSSpacing) + this._lineSpace * fontSize
+
 
         let line = 390
         let currentX = 0
         let currentY = 2
         for (let i = 0; i < this._svgWidth.length; i++) {
             if (fontSize * (this._svgWidth[i][0] - this._svgWidth[i][1]) + currentX <= line) {
-                this._svgPostion.push([currentX, currentY,fontSize])
+                this._svgPostion.push([currentX, currentY, fontSize])
                 currentX = currentX + fontSize * (this._svgWidth[i][0] - this._svgWidth[i][1]) + wordSpacing
                 currentY = currentY
             }
@@ -236,14 +237,14 @@ export default class SvgPreviewer {
                 // 随意随意随意随意随意随意随意随意随,意随意
                 if (this._punctuation.includes(this._svgWidth[i][2])) {
                     let last = this._svgPostion[this._svgPostion.length - 1]
-                    this._svgPostion[this._svgPostion.length - 1] = [0, currentY + lineSpacing,fontSize]
+                    this._svgPostion[this._svgPostion.length - 1] = [0, currentY + lineSpacing, fontSize]
                     currentX = currentX - last[0]
-                    this._svgPostion.push([currentX, currentY + lineSpacing,fontSize])
+                    this._svgPostion.push([currentX, currentY + lineSpacing, fontSize])
                     currentX = currentX + fontSize * (this._svgWidth[i][0] - this._svgWidth[i][1]) + wordSpacing
                     currentY = currentY + lineSpacing
                 }
                 else {
-                    this._svgPostion.push([0, currentY + lineSpacing,fontSize])
+                    this._svgPostion.push([0, currentY + lineSpacing, fontSize])
                     currentX = fontSize * (this._svgWidth[i][0] - this._svgWidth[i][1]) + wordSpacing
                     currentY = currentY + lineSpacing
                 }
@@ -347,7 +348,7 @@ export default class SvgPreviewer {
         let addY = this._svgPostion[previewId][1]
         let size = this._svgPostion[previewId][2]
         let isClosed = segement.isClosed
-        let startPoint: Point = new Point(segement.startPointX*size + addX, segement.startPointY*size + addY)
+        let startPoint: Point = new Point(segement.startPointX * size + addX, segement.startPointY * size + addY)
         let currentPoint = startPoint
         let segments = segement.lines
         let startGUIPoint = new GUIOnPoint(startPoint)
@@ -355,7 +356,7 @@ export default class SvgPreviewer {
         let currentGUILine = null
         let currentControlPoint = null
         for (let i = 0; i < segments.length; i++) {
-            let targetPoint = (i == segments.length - 1 && isClosed) ? startPoint : new Point(segments[i][5]*size + addX, segments[i][6]*size + addY)
+            let targetPoint = (i == segments.length - 1 && isClosed) ? startPoint : new Point(segments[i][5] * size + addX, segments[i][6] * size + addY)
             let targetGUIPoint = (i == segments.length - 1 && isClosed) ? startGUIPoint : new GUIOnPoint(targetPoint)
             if (segments[i][3] == segments[i][5] && segments[i][4] == segments[i][6]) {
                 //直线
@@ -373,8 +374,8 @@ export default class SvgPreviewer {
                 currentGUIPoint = targetGUIPoint
             } else {
                 //三次贝塞尔曲线
-                let controlPoint1 = new Point(segments[i][1] *size+ addX, segments[i][2] *size+ addY)
-                let controlPoint2 = new Point(segments[i][3] *size+ addX, segments[i][4]*size + addY)
+                let controlPoint1 = new Point(segments[i][1] * size + addX, segments[i][2] * size + addY)
+                let controlPoint2 = new Point(segments[i][3] * size + addX, segments[i][4] * size + addY)
                 let controlGUIPoint1 = new GUIOffPoint(controlPoint1)
                 let controlGUIPoint2 = new GUIOffPoint(controlPoint2)
                 let controlGUILine1 = new GUIControlLine(controlPoint1, currentPoint)

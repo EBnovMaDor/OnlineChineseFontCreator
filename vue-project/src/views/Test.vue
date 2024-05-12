@@ -39,7 +39,7 @@
 						<el-col :span="6"
 							style="display: flex; align-items: center; border-left: 1px solid var(--el-border-color); padding-left: 12px; min-width:44px;">
 							<el-avatar :style="{ 'background-color': extractColorByName('Xu') }" :size="32"
-								:src="circleUrl">Xu</el-avatar>
+								>Xu</el-avatar>
 						</el-col>
 					</el-row>
 				</div>
@@ -215,13 +215,14 @@
 				</div>
 				<img :src="getImageUrl(img)" width="578" height="488" style="position:fixed; top:30px;left:100px;" />
 				<!--字体编辑画布-->
-				<div id="canvas" @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
+				<div id="canvas"></div>
 
 				<!--底部栏-->
 				<div class="footer">
-					<div class="preview">
-						<span>大今国意我永然警转酬随风鹰</span>
-					</div>
+					<!-- <div class="preview"> -->
+					<span>大今国意我永然警转酬随风鹰</span>
+					<!-- <div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div> -->
+					<!-- </div> -->
 
 				</div>
 			</div>
@@ -304,10 +305,12 @@ import { ArrowDown, Delete, Edit, Plus, View } from '@element-plus/icons-vue'
 import { defineComponent, ref, onMounted, withScopeId } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import SvgEditor from '../lib/svg-editor/SvgEditor'
+import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
 import { useRouter } from 'vue-router'
 import router from '@/router'
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let svgEditor: SvgEditor | undefined
+// let svgPreviewer: SvgPreviewer | undefined
 let idcount = 10
 const ws = new WebSocket('ws://localhost:8000');
 declare var require: any
@@ -351,10 +354,11 @@ export default defineComponent({
 			length2: 0,
 			angle1: 0,
 			angle2: 0,
-			font: "font_2",
-			word: ",",
-			img: '2.png',
-			getImageUrl : (name: string) => {
+			font: "font_1",
+			word: "今",
+			img: '1.png',
+			previewString: "今国意我永然警转酬随风鹰",
+			getImageUrl: (name: string) => {
 				return new URL(`../image/${name}`, import.meta.url).href
 			},
 			defaultProps: {
@@ -448,15 +452,14 @@ export default defineComponent({
 	},
 	mounted() {
 		svgEditor = new SvgEditor('canvas')
+		// svgPreviewer = new SvgPreviewer('preview')
+		// this.sendPreview()
 		this.getInfo()
 		this.username = localStorage.getItem('username') || '';
 		if (!localStorage.getItem('username')) {
 			router.push('/login')
 			return;
 		}
-		// const getImageUrl = (name: string) => {
-		// 	return new URL(`../image/${name}`, import.meta.url).href
-		// }
 		ws.addEventListener('open', this.handleWsOpen.bind(this), false)
 		ws.addEventListener('close', this.handleWsClose.bind(this), false)
 		ws.addEventListener('error', this.handleWsError.bind(this), false)
@@ -483,12 +486,6 @@ export default defineComponent({
 		importSVG() {
 			svgEditor?.importSVG()
 		},
-		test() {
-			svgEditor?.test()
-		},
-		//backtest() {
-		//	svgEditor?.backtest()
-		//},
 		move() {
 			svgEditor?.setTool('move')
 		},
@@ -518,9 +515,6 @@ export default defineComponent({
 		},
 		deleteMark() {
 			svgEditor?.setTool('deleteMark')
-		},
-		mergePoint() {
-			svgEditor?.setTool('mergePoint')
 		},
 		ruler() {
 			svgEditor?.setTool('ruler')
@@ -610,7 +604,6 @@ export default defineComponent({
 			//设置回选择工具
 			svgEditor?.setTool('editor')
 		},
-
 		markShow(id: number) {
 			svgEditor!.Mark(id)
 		},
@@ -648,8 +641,19 @@ export default defineComponent({
 		},
 		handleWsMessage(e: any) {
 			const msg = JSON.parse(e.data);
-			// console.log('FE:WebSocket:message',msg.msg)
-			if (msg.font == this.font && msg.word == this.word) {
+			console.log('FE:WebSocket:message',msg)
+			if (msg.op == 'editEnd') {
+				// console.log("111")
+				// this.sendPreview()
+			}
+			else if (msg.op == 'preview' || msg.op == 'previewEnd') {
+				// console.log("222")
+				// if (msg.font == this.font) {
+				// 	svgPreviewer!.handleSVG(msg)
+				// }
+			}
+			else if (msg.font == this.font && msg.word == this.word) {
+				console.log("333")
 				svgEditor!.handleSVG(msg)
 			}
 			this.list = []
@@ -664,11 +668,11 @@ export default defineComponent({
 			// console.log(this.list)
 		},
 		changeActive(e: MouseEvent) {
-			// console.log(e);
+			console.log(e);
 		},
 		removeActive(e: MouseEvent) {
-			// if (e.currentTarget)
-			// (e.currentTarget as HTMLElement).className = '';
+			if (e.currentTarget)
+			(e.currentTarget as HTMLElement).className = '';
 		},
 		sendMessage() {
 			if (ws.readyState === WebSocket.OPEN) {
@@ -677,7 +681,7 @@ export default defineComponent({
 
 				for (let i = 0; i < segment.length; i++) {
 					if (segment[i][0] == 'i') {
-						console.log("import svg!")
+						console.log("import svgEditor!")
 						ws.send(JSON.stringify({
 							op: segment[i][0],
 							font: this.font,
@@ -726,19 +730,48 @@ export default defineComponent({
 						}))
 					}
 				}
+				console.log("endEditor!")
+				ws.send(JSON.stringify({
+					op: 'editEnd',
+					font: this.font,
+					word: this.word
+				}))
 			} else if (ws.readyState == WebSocket.CONNECTING) {
 				ws.addEventListener('open', () => this.sendMessage())
 			}
 		},
+		sendPreview() {
+			// console.log("111")
+			// if (ws.readyState === WebSocket.OPEN) {
+			// 	let segment = this.previewString
+			// 	svgPreviewer?.refresh()
+			// 	for (let i = 0; i < segment.length; i++) {
+			// 		let curword = this.previewString[i]
+			// 		// console.log("import svg!", curword)
+			// 		ws.send(JSON.stringify({
+			// 			op: 'preview',
+			// 			font: this.font,
+			// 			word: curword
+			// 		}))
+			// 	}
+			// } else if (ws.readyState == WebSocket.CONNECTING) {
+			// 	ws.addEventListener('open', () => this.sendPreview())
+			// }
+		},
+		typesetting() {
+			// svgPreviewer!.update()
+			// svgPreviewer!.typeSetting("0", "0", "1")
+			// svgPreviewer!.changeToPreview()
+		},
 		getInfo() {
 			setTimeout(() => {
-				let fps = svgEditor?.fps
+				// let fps = svgEditor?.fps
 				// this.fps = fps!
 				// let { x, y, width, height } = svgEditor!.viewPort
-				let minX = svgEditor!.baseBuffer.minX
-				let minY = svgEditor!.baseBuffer.minY
-				let maxX = svgEditor!.baseBuffer.maxX
-				let maxY = svgEditor!.baseBuffer.maxY
+				// let minX = svgEditor!.baseBuffer.minX
+				// let minY = svgEditor!.baseBuffer.minY
+				// let maxX = svgEditor!.baseBuffer.maxX
+				// let maxY = svgEditor!.baseBuffer.maxY
 				// this.guiWidth = svgEditor!.gui.canvasWidth
 				// this.guiHeight = svgEditor!.gui.canvasHeight
 				// this.viewPortX = x
@@ -751,6 +784,7 @@ export default defineComponent({
 				// this.baseBufferMinY = minY
 				// this.baseBufferMaxX = maxX
 				// this.baseBufferMaxY = maxY
+
 				this.currentTool = svgEditor!.currentTool
 				this.showInputBox = svgEditor?.ifMarked!
 				this.showInputBox2 = svgEditor?.ifMarkedCanvas!

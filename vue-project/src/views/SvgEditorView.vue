@@ -2,8 +2,8 @@
     <div style="text-align: center">
         <div>fps: {{ fps }}</div>
         <div>System Current Tool: {{ currentTool }}</div>
-        <div class="mousetest" id="canvas" style="width: 60vw; height: 60vh;margin-top:20px;"
-            @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
+        <div id="canvas" style="width: 60vw; height: 60vh;margin-top:20px;"></div>
+        <div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div>
         <el-button type="primary" @click="test"> Test </el-button>
 
         <el-input type="textarea" :rows="5" placeholder="请输入" v-model="word" style="margin-bottom:20px">
@@ -54,11 +54,12 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import SvgEditor from '../lib/svg-editor/SvgEditor'
+import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
 import { useRouter } from 'vue-router'
 import router from '@/router'
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let svgEditor: SvgEditor | undefined
-
+let svgPreviewer: SvgPreviewer | undefined
 const ws = new WebSocket('ws://localhost:8000');
 
 export default defineComponent({
@@ -103,11 +104,13 @@ export default defineComponent({
             angle2: 0,
             // svg_cnt: 1,
             word: "意",
-            font: "font_1"
+            font: "font_1",
+            previewString: "今国意我永然警转酬随风鹰"
         }
     },
     mounted() {
         svgEditor = new SvgEditor('canvas')
+        svgPreviewer = new SvgPreviewer('preview')
         this.getInfo()
         this.username = localStorage.getItem('username') || '';
         if (!localStorage.getItem('username')) {

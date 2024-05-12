@@ -206,5 +206,11 @@ function handleMessage(msg) {
       c.send(JSON.stringify(e));
     })
   }
+  else if(op == 'editEnd'){
+    let e = new Object()
+    e.op = 'editEnd'
+    e.font = font
+    e.word = word
+  }
 }
 module.exports = app
