@@ -45,7 +45,7 @@ export default class GUI implements Observer {
 
     private _guiPreviewElements: Map<string | number, GUIElement> = new Map<string | number, GUIElement>();
 
-    constructor(divId: string) {
+    constructor(divId: string, ifScrollBar: boolean) {
         this._divElement = document.getElementById(divId) as HTMLDivElement;
         if (this._divElement == null) throw new Error('Cannot find designated Div')
 
@@ -71,8 +71,7 @@ export default class GUI implements Observer {
         this._mainLayer.add(this._decoratedGroup)
 
         this._canvas.add(this._mainLayer);
-
-        this._initScrollBar()
+        if (ifScrollBar) { this._initScrollBar() }
     }
 
     set guiElementIndex(guiElementIndex: number) {
@@ -101,9 +100,8 @@ export default class GUI implements Observer {
         let { baseBuffer } = GlobalManager.instance
         let guiElementIdx = guiElement.guiElementId
         this._guiBaseElements.delete(guiElementIdx)
-        // console.log("我在GUI里！！delete from _guiBaseElements",guiElementIdx)
-        if (guiElement.baseBufferElement != null)baseBuffer.deleteBaseBufferElement(guiElement.baseBufferElement)
-        if (guiElement.virtualBufferElement != null)baseBuffer.deleteBaseBufferElement(guiElement.virtualBufferElement)
+        if (guiElement.baseBufferElement != null) baseBuffer.deleteBaseBufferElement(guiElement.baseBufferElement)
+        if (guiElement.virtualBufferElement != null) baseBuffer.deleteBaseBufferElement(guiElement.virtualBufferElement)
     }
 
     public addGUIDecoratedElement(guiElement: GUIDecoratedElement): void {

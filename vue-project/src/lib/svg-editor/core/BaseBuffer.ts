@@ -77,4 +77,7 @@ export default class BaseBuffer {
         this._horizontalGrid = value
     }
 
+    set maxStorageY(maxStorageY:number){
+        this._maxStorageY = maxStorageY
+    }
 }

@@ -213,8 +213,7 @@
 
 					</div>
 				</div>
-				<img src="../image/image1.png" width="1000" height="600"
-					style="position:fixed; top:100px;left:250px;" />
+				<img :src="getImageUrl(img)" width="578" height="488" style="position:fixed; top:30px;left:100px;" />
 				<!--字体编辑画布-->
 				<div id="canvas" @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
 
@@ -275,7 +274,7 @@
 				<div class="rsidebar-bottom">
 					<div style="margin: 10px 0 10px; text-align: left; font-size: 16px;"><b>按钮</b></div>
 					<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
-					<el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+					<el-button type="primary" @click="importSVG"> 导出SVG </el-button>
 				</div>
 
 			</aside>
@@ -302,7 +301,7 @@
 
 <script lang="ts">
 import { ArrowDown, Delete, Edit, Plus, View } from '@element-plus/icons-vue'
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, withScopeId } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import SvgEditor from '../lib/svg-editor/SvgEditor'
 import { useRouter } from 'vue-router'
@@ -311,6 +310,7 @@ const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let svgEditor: SvgEditor | undefined
 let idcount = 10
 const ws = new WebSocket('ws://localhost:8000');
+declare var require: any
 
 export default defineComponent({
 
@@ -332,22 +332,8 @@ export default defineComponent({
 			mouseTextPos: { x: 0, y: 0 },
 			mousecommentPos: { left: 0, top: 0 },
 			inputValue: "",
-			// fps: 60,
-			// viewPortX: 0,
-			// viewPortY: 0,
-			// viewPortWidth: 0,
-			// viewPortHeight: 0,
-			// baseBufferMinX: 0,
-			// baseBufferMaxX: 0,
-			// baseBufferMinY: 0,
-			// baseBufferMaxY: 0,
-			// baseBufferWidth: 0,
-			// baseBufferHeight: 0,
-			// guiWidth: 0,
-			// guiHeight: 0,
 			currentTool: "move",
 			svgEditor: undefined as SvgEditor | undefined,
-			// svgpath: 'M 0 0 L 4 0 L 4 -1 L 0 -1 L 0 -3.5 L -1 -3.5 L -1 -1 L -5 -1 L -5 0 L -1 0 C -1.5 2 -3 4 -5 5.5 L -4.5 6 C -2.5 4.5 -1 2.5 -0.5 1 C 0 2.5 1.5 4.5 3.5 6 L 4 5.5 C 2 4 0.5 2 0 0',
 			username: '',
 			ifSend: 0,
 			markedId: -1,
@@ -365,7 +351,12 @@ export default defineComponent({
 			length2: 0,
 			angle1: 0,
 			angle2: 0,
-			font: "大",
+			font: "font_2",
+			word: ",",
+			img: '2.png',
+			getImageUrl : (name: string) => {
+				return new URL(`../image/${name}`, import.meta.url).href
+			},
 			defaultProps: {
 				children: 'children',
 				label: 'label',
@@ -463,6 +454,9 @@ export default defineComponent({
 			router.push('/login')
 			return;
 		}
+		// const getImageUrl = (name: string) => {
+		// 	return new URL(`../image/${name}`, import.meta.url).href
+		// }
 		ws.addEventListener('open', this.handleWsOpen.bind(this), false)
 		ws.addEventListener('close', this.handleWsClose.bind(this), false)
 		ws.addEventListener('error', this.handleWsError.bind(this), false)
@@ -488,9 +482,6 @@ export default defineComponent({
 		},
 		importSVG() {
 			svgEditor?.importSVG()
-		},
-		exportSVG() {
-			svgEditor?.exportSVG()
 		},
 		test() {
 			svgEditor?.test()
@@ -658,14 +649,14 @@ export default defineComponent({
 		handleWsMessage(e: any) {
 			const msg = JSON.parse(e.data);
 			// console.log('FE:WebSocket:message',msg.msg)
-			if (msg.font == this.font) {
+			if (msg.font == this.font && msg.word == this.word) {
 				svgEditor!.handleSVG(msg)
 			}
 			this.list = []
 			let comment = svgEditor!.transCmt()
 			// console.log(comment)
 			for (let i = 0; i < comment.length; i++) {
-				// console.log("111")
+
 				var mark = { gui_id: comment[i], gui_mark: comment[i + 1] }
 				i++
 				this.list.push(mark)
@@ -683,12 +674,14 @@ export default defineComponent({
 			if (ws.readyState === WebSocket.OPEN) {
 				svgEditor!.ifSend = 0
 				let segment = svgEditor!.msgSend
+
 				for (let i = 0; i < segment.length; i++) {
 					if (segment[i][0] == 'i') {
-						// console.log("import svg!")
+						console.log("import svg!")
 						ws.send(JSON.stringify({
 							op: segment[i][0],
-							font: this.font
+							font: this.font,
+							word: this.word
 						}))
 					}
 					else if (segment[i][0] == 'edit') {
@@ -696,8 +689,10 @@ export default defineComponent({
 						ws.send(JSON.stringify({
 							op: segment[i][0],
 							font: this.font,
+							word: this.word,
 							svg_id: segment[i][1],
-							svg: segment[i][2]
+							svg: segment[i][2],
+							fill: segment[i][3]
 						}))
 					}
 					else if (segment[i][0] == 'add') {
@@ -705,8 +700,10 @@ export default defineComponent({
 						ws.send(JSON.stringify({
 							op: segment[i][0],
 							font: this.font,
+							word: this.word,
 							svg_id: segment[i][1],
-							svg: segment[i][2]
+							svg: segment[i][2],
+							fill: segment[i][3]
 						}))
 					}
 					else if (segment[i][0] == 'delete') {
@@ -714,7 +711,18 @@ export default defineComponent({
 						ws.send(JSON.stringify({
 							op: segment[i][0],
 							font: this.font,
+							word: this.word,
 							svg_id: segment[i][1],
+						}))
+					}
+					else if (segment[i][0] == 'changeFill') {
+						console.log("changeFill", "i", i, segment[i])
+						ws.send(JSON.stringify({
+							op: segment[i][0],
+							font: this.font,
+							word: this.word,
+							svg_id: segment[i][1],
+							fill: segment[i][2]
 						}))
 					}
 				}
@@ -779,6 +787,7 @@ export default defineComponent({
 				this.ifSend = svgEditor?.ifSend!
 				if (this.ifSend == 1) {
 					this.sendMessage()
+
 				}
 				//显示评论输入框时计算位置
 				if (this.showInputBox) {

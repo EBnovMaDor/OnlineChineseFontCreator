@@ -14,7 +14,7 @@ export default class BaseBufferTri implements BaseBufferElement {
 
     constructor(center: Point, radius: number = 1,
         konvaGroup: Konva.Group = GlobalManager.instance.gui.pointGroup,
-        config: BaseBufferElementConfig = { fill: 'white', stroke: 'black', strokeWidth: 2, opacity: 1, isVirtual: false }) {
+        config: BaseBufferElementConfig = { fill: '', stroke: 'black', strokeWidth: 2, opacity: 1, isVirtual: false }) {
         this._center = center
         this._radius = radius
 

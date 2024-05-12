@@ -121,7 +121,7 @@ export default class SvgEditor {
         GlobalManager.instance.baseBuffer = this._baseBuffer
 
         /** 初始化GUI绘制区域 */
-        this._gui = new GUI(divId)
+        this._gui = new GUI(divId,true)
         GlobalManager.instance.gui = this._gui
 
         /** 初始化视口，宽高为世界宽高的一半，且居中，比例和gui比例保持一致 */
@@ -152,25 +152,16 @@ export default class SvgEditor {
         SvgEditor.anim.start();
 
         this.init();
-        this.importSVG();
-        // console.log("111")
     }
 
     public init(): void {
-        // let { gui, baseBuffer, viewPort } = GlobalManager.instance
-        // this.importSVGPath("m 0 0 M 3 1 M 3 0 C 3.6667 0 4.3333 0 6 0 L 6 1 M 4 2 L 8 1 Q 10 3 7 3 Q 5 5 3 4 C 2 4 1 4 0 2 Z M 9 5 L 3 7 L 5 9 L 9 5")
+        this.importSVG();
     }
 
     public importSVG() {
+        this._svgPath.clear()
         this._msgSend = [['i']]
         this.ifSend = 1
-    }
-
-    public exportSVG() {
-        this.saveSVG()
-        for (let element of this._gui!.guiBaseElements.values()) {
-            // if(element.isChosen == false){}
-        }
     }
 
     public handleSVG(e: any) {
@@ -3091,78 +3082,6 @@ export default class SvgEditor {
             this.saveSVG()
         }
     }
-    public changeToPreviewSave() {
-        console.log("1111")
-        for (let element of this._gui!.guiBaseElements.values()) {
-            if (!(element instanceof GUIStraightLine) && !(element instanceof GUICubicCurve)) {
-                element.isVisible = false
-            } else {
-                if (element.isVisible) {
-                    element.isVisible = false
-                    let isClosed = true
-                    let arr = []
-                    let currentGUILine = element
-                    let nextGUILine = (element.nextGUIPoint! as GUIOnPoint).nextGUILine
-                    arr.push(currentGUILine)
-                    while (nextGUILine != currentGUILine) {
-                        if (nextGUILine == null) {
-                            isClosed = false
-                            break
-                        }
-                        nextGUILine!.isVisible = false
-                        arr.push(nextGUILine)
-                        nextGUILine = (nextGUILine!.nextGUIPoint! as GUIOnPoint).nextGUILine
-                    }
-                    if (isClosed) {
-                        let a = new GUIClosedPath(new BaseBufferClosedPath(arr))
-                        if (this._svgPath.get(element.guiSegmentId)![0].fill == true)
-                            a.baseBufferElement.config.fill = 'white'
-                        else
-                            a.baseBufferElement.config.fill = 'black'
-                        this._gui!.addGUIPreviewElement(a)
-                    }
-                }
-            }
-        }
-    }
-
-    // public changeToPreview() {
-    //     console.log("changeToPreview")
-    //     for (let element of this._gui!.guiBaseElements.values()) {
-    //         if (!instanceOfGUILine(element) || element instanceof GUIControlLine) {
-    //             element.isVisible = false
-    //         } else {
-    //             if (element.isVisible) {
-    //                 let isClosed = true
-    //                 let arr = []
-    //                 let currentGUILine = element
-    //                 let nextGUILine = (element.nextGUIPoint! as GUIOnPoint).nextGUILine
-    //                 arr.push(currentGUILine)
-    //                 while (nextGUILine != currentGUILine) {
-    //                     if (nextGUILine == null) {
-    //                         isClosed = false
-    //                         break
-    //                     }
-    //                     arr.push(nextGUILine)
-    //                     nextGUILine = (nextGUILine!.nextGUIPoint! as GUIOnPoint).nextGUILine
-    //                 }
-    //                 if (isClosed) {
-    //                     for (let i = 0; i < arr.length; i++) {
-    //                         if (arr[i] instanceof GUICubicCurve) {
-    //                             arr[i].baseBufferElement.config.fill = 'black'
-    //                         } else {
-    //                             arr[i].isVisible = false
-    //                         }
-
-    //                     }
-    //                     let a = new GUIClosedPath(new BaseBufferClosedPolygon(arr))
-    //                     this._gui!.addGUIPreviewElement(a)
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     // console.log("changeToPreview finish", this._gui!.guiBaseElements)
-    // }
 }
 
 if (import.meta.hot) {

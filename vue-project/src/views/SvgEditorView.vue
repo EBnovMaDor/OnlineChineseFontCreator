@@ -6,7 +6,7 @@
             @mouseenter="changeActive($event)" @mouseleave="removeActive($event)"></div>
         <el-button type="primary" @click="test"> Test </el-button>
 
-        <el-input type="textarea" :rows="5" placeholder="请输入SVG Path" v-model="svgpath" style="margin-bottom:20px">
+        <el-input type="textarea" :rows="5" placeholder="请输入" v-model="word" style="margin-bottom:20px">
         </el-input>
         <el-button type="primary" @click="move"> move </el-button>
         <el-button type="primary" @click="editor"> editor </el-button>
@@ -24,7 +24,7 @@
         <el-button type="primary" @click="shapeMark"> shapeMark </el-button>
         <el-button type="primary" @click="changeFill"> changeFill </el-button>
         <el-button type="primary" @click="importSVG"> 导入SVG </el-button>
-        <el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
+        <el-button type="primary" @click="setFont"> 设置字 </el-button>
         <div v-if="pointPos">点的坐标 x: {{ pointx1 }}, y:{{ pointy1 }}</div>
         <div v-if="linePos">直线的两点坐标 (x1: {{ pointx1 }}, y1:{{ pointy1 }}); (x2: {{ pointx2 }}, y2:{{ pointy2 }}); 直线的长度
             : {{ length1 }} ; 线的角度: {{ angle1 }}度</div>
@@ -84,7 +84,7 @@ export default defineComponent({
             guiHeight: 0,
             currentTool: "move",
             svgEditor: undefined as SvgEditor | undefined,
-            svgpath: 'M 0 0 L 4 0 L 4 -1 L 0 -1 L 0 -3.5 L -1 -3.5 L -1 -1 L -5 -1 L -5 0 L -1 0 C -1.5 2 -3 4 -5 5.5 L -4.5 6 C -2.5 4.5 -1 2.5 -0.5 1 C 0 2.5 1.5 4.5 3.5 6 L 4 5.5 C 2 4 0.5 2 0 0',
+            svgpath: '今',
             username: '',
             ifSend: 0,
             markedId: -1,
@@ -102,7 +102,8 @@ export default defineComponent({
             angle1: 0,
             angle2: 0,
             // svg_cnt: 1,
-            font: "大"
+            word: "意",
+            font: "font_1"
         }
     },
     mounted() {
@@ -122,8 +123,9 @@ export default defineComponent({
         importSVG() {
             svgEditor?.importSVG()
         },
-        exportSVG() {
-            svgEditor?.exportSVG()
+        setFont() {
+            svgEditor?.importSVG()
+            // console.log("111")
         },
         test() {
             svgEditor?.test()
@@ -247,17 +249,17 @@ export default defineComponent({
         handleWsMessage(e: any) {
             const msg = JSON.parse(e.data);
             // console.log('FE:WebSocket:message',msg)
-            if (msg.font == this.font) {
+            if (msg.font == this.font && msg.word == this.word) {
                 svgEditor!.handleSVG(msg)
             }
             // if(svgEditor)
             //     svgEditor.acceptSVG(msg.svg)
-            this.list= []
+            this.list = []
             let comment = svgEditor!.transCmt()
             // console.log(comment)
             for (let i = 0; i < comment.length; i++) {
                 // console.log("111")
-                var mark = { gui_id: comment[i], gui_mark: comment[i+1]} 
+                var mark = { gui_id: comment[i], gui_mark: comment[i + 1] }
                 i++
                 this.list.push(mark)
             }
@@ -336,44 +338,49 @@ export default defineComponent({
                             // console.log("import svg!")
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
-                                font: this.font
+                                font: this.font,
+                                word: this.word
                             }))
                         }
-                        else if(segment[i][0]=='edit'){
-                            console.log("edit!","i",i,segment)
+                        else if (segment[i][0] == 'edit') {
+                            console.log("edit!", "i", i, segment)
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
+                                word: this.word,
                                 svg_id: segment[i][1],
-                                svg:segment[i][2],
-                                fill :segment[i][3]
+                                svg: segment[i][2],
+                                fill: segment[i][3]
                             }))
                             console.log(segment[i][3])
                         }
-                        else if(segment[i][0]=='add'){
-                            // console.log("add",segment[i])
+                        else if (segment[i][0] == 'add') {
+                            console.log("add", segment[i])
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
+                                word: this.word,
                                 svg_id: segment[i][1],
-                                svg:segment[i][2],
-                                fill :segment[i][3]
+                                svg: segment[i][2],
+                                fill: segment[i][3]
                             }))
                             console.log(segment[i][3])
                         }
-                        else if(segment[i][0]=='delete'){
+                        else if (segment[i][0] == 'delete') {
                             // console.log("delete","i",i,segment[i])
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
+                                word: this.word,
                                 svg_id: segment[i][1],
                             }))
                         }
-                        else if(segment[i][0]=='changeFill'){
-                            console.log("changeFill","i",i,segment[i])
+                        else if (segment[i][0] == 'changeFill') {
+                            console.log("changeFill", "i", i, segment[i])
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
+                                word: this.word,
                                 svg_id: segment[i][1],
                                 fill: segment[i][2]
                             }))

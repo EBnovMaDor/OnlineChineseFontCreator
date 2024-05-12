@@ -79,8 +79,9 @@ function handleMessage(msg) {
   const jsonObj = JSON.parse(msg);
   const op = jsonObj.op
   const font = jsonObj.font
+  const word = jsonObj.word
   if (op == 'i') {
-    svgDatabase.findSvg(font).then(res => {
+    svgDatabase.findSvg([font,word]).then(res => {
       // console.log('Count:', res);
       for (let e of res) {
         e.op = 'edit'
@@ -89,6 +90,22 @@ function handleMessage(msg) {
           c.send(JSON.stringify(e));
         })
       }
+    })
+  }
+  else if (op == 'preview') {
+    svgDatabase.findSvg([font,word]).then(res => {
+      // console.log('Count:', res);
+      for (let e of res) {
+        e.op = 'preview'
+        // console.log("e:", e.toString())
+        server.clients.forEach((c) => {
+          c.send(JSON.stringify(e));
+        })
+      }
+      var jsonObj = {op:"previewEnd",font:font,word:word};
+      server.clients.forEach((c) => {
+        c.send(JSON.stringify(jsonObj));
+      })
     })
   }
   else if (op == 'edit') {
@@ -101,14 +118,13 @@ function handleMessage(msg) {
     const lines = JSON.stringify(valuesArr[4])
     const isClose = valuesArr[5].toString()
     const fill = jsonObj.fill.toString()
-    // const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose]
-    const arr = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font, svg_id]
-    // const arr2 = [jsonObj.font[0], jsonObj.svg_id]
+    const arr = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font,word, svg_id]
     svgDatabase.updateSvg(arr)
     let e = new Object()
     e.op = 'edit'
     e.svg_id = svg_id
     e.font = font
+    e.word = word
     e.startPointX = startPointX
     e.startPointY = startPointY
     e.endPointX = endPointX
@@ -131,9 +147,9 @@ function handleMessage(msg) {
     const lines = JSON.stringify(valuesArr[4])
     const isClose = valuesArr[5].toString()
     const fill = jsonObj.fill.toString()
-    const arr = [jsonObj.font[0], jsonObj.svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose,fill]
-    const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font, svg_id]
-    const arr2 = [jsonObj.font[0], jsonObj.svg_id]
+    const arr = [font, word,svg_id, startPointX, startPointY, endPointX, endPointY, lines, isClose,fill]
+    const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font,word, svg_id]
+    const arr2 = [font, word,svg_id]
     svgDatabase.countSvg(arr2).then(count => {
       // console.log('Count:', res);
       if(count > 0){
@@ -147,6 +163,7 @@ function handleMessage(msg) {
     e.op = 'edit'
     e.svg_id = svg_id
     e.font = font
+    e.word = word
     e.startPointX = startPointX
     e.startPointY = startPointY
     e.endPointX = endPointX
@@ -162,12 +179,13 @@ function handleMessage(msg) {
   }
   else if(op == 'delete'){
     const svg_id = jsonObj.svg_id
-    const arr = [font, svg_id]
+    const arr = [font,word, svg_id]
     svgDatabase.deleteSvg(arr)
     let e = new Object()
     e.op = 'delete'
     e.svg_id = svg_id
     e.font = font
+    e.word = word
     // console.log("e:", e)
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
@@ -176,12 +194,13 @@ function handleMessage(msg) {
   else if(op == 'changeFill'){
     const svg_id = jsonObj.svg_id
     const fill = jsonObj.fill.toString()
-    const arr = [fill,font, svg_id]
+    const arr = [fill,font,word, svg_id]
     svgDatabase.updateSvgFill(arr)
     let e = new Object()
     e.op = 'changeFill'
     e.svg_id = svg_id
     e.font = font
+    e.word = word
     e.fill = fill
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));

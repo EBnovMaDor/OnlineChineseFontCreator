@@ -4,7 +4,7 @@ import Test from '../views/Test.vue'
 import Login from '../views/Login.vue'
 //import Login2 from '../views/Login2.vue'
 import SvgEditor from '../views/SvgEditorView.vue'
-import SvgEditorView from '../views/SvgEditorView.vue'
+import SvgPreview from '../views/SVGPreview.vue'
 import FontPreview from '../views/FontPreview.vue'
 
 const router = createRouter({
@@ -34,6 +34,10 @@ const router = createRouter({
             path: '/font',
             name: 'FontPreview',
             component: FontPreview
+        },{
+            path: '/svgPreview',
+            name: 'SvgPreview',
+            component: SvgPreview
         }
     ]
 })

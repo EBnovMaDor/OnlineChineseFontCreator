@@ -38,5 +38,4 @@ export default class GUIClosedPath implements GUIElement {
     set isVisible(isVisible: boolean) {
         this._isVisible = isVisible;
     }
-
 }
