@@ -220,8 +220,8 @@
 				<!--底部栏-->
 				<div class="footer">
 					<!-- <div class="preview"> -->
-					<span>大今国意我永然警转酬随风鹰</span>
-					<!-- <div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div> -->
+					<!-- <span>大今国意我永然警转酬随风鹰</span> -->
+					<div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div>
 					<!-- </div> -->
 
 				</div>
@@ -305,12 +305,12 @@ import { ArrowDown, Delete, Edit, Plus, View } from '@element-plus/icons-vue'
 import { defineComponent, ref, onMounted, withScopeId } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import SvgEditor from '../lib/svg-editor/SvgEditor'
-import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
+import SvgPreviewer from '../lib/svg-preview/SvgPreviewer'
 import { useRouter } from 'vue-router'
 import router from '@/router'
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let svgEditor: SvgEditor | undefined
-// let svgPreviewer: SvgPreviewer | undefined
+let svgPreviewer: SvgPreviewer | undefined
 let idcount = 10
 const ws = new WebSocket('ws://localhost:8000');
 declare var require: any
@@ -358,6 +358,7 @@ export default defineComponent({
 			word: "今",
 			img: '1.png',
 			previewString: "今国意我永然警转酬随风鹰",
+			previewcnt:0,
 			getImageUrl: (name: string) => {
 				return new URL(`../image/${name}`, import.meta.url).href
 			},
@@ -452,7 +453,7 @@ export default defineComponent({
 	},
 	mounted() {
 		svgEditor = new SvgEditor('canvas')
-		// svgPreviewer = new SvgPreviewer('preview')
+		svgPreviewer = new SvgPreviewer('preview')
 		// this.sendPreview()
 		this.getInfo()
 		this.username = localStorage.getItem('username') || '';
@@ -485,6 +486,7 @@ export default defineComponent({
 		},
 		importSVG() {
 			svgEditor?.importSVG()
+			this.sendPreview()
 		},
 		move() {
 			svgEditor?.setTool('move')
@@ -641,19 +643,27 @@ export default defineComponent({
 		},
 		handleWsMessage(e: any) {
 			const msg = JSON.parse(e.data);
-			console.log('FE:WebSocket:message',msg)
+			// console.log('FE:WebSocket:message',msg)
 			if (msg.op == 'editEnd') {
 				// console.log("111")
-				// this.sendPreview()
+				this.sendPreview()
 			}
 			else if (msg.op == 'preview' || msg.op == 'previewEnd') {
 				// console.log("222")
-				// if (msg.font == this.font) {
-				// 	svgPreviewer!.handleSVG(msg)
-				// }
+				if (msg.font == this.font) {
+					svgPreviewer!.handleSVG(msg)
+					if(msg.op == 'previewEnd'){
+						this.previewcnt ++;
+						if(this.previewcnt == this.previewString.length){
+							this.typesetting()
+							this.previewcnt = 0
+						}
+					}
+				}
+				
 			}
 			else if (msg.font == this.font && msg.word == this.word) {
-				console.log("333")
+				// console.log("333")
 				svgEditor!.handleSVG(msg)
 			}
 			this.list = []
@@ -736,32 +746,33 @@ export default defineComponent({
 					font: this.font,
 					word: this.word
 				}))
+				console.log("endSend")
 			} else if (ws.readyState == WebSocket.CONNECTING) {
 				ws.addEventListener('open', () => this.sendMessage())
 			}
 		},
 		sendPreview() {
-			// console.log("111")
-			// if (ws.readyState === WebSocket.OPEN) {
-			// 	let segment = this.previewString
-			// 	svgPreviewer?.refresh()
-			// 	for (let i = 0; i < segment.length; i++) {
-			// 		let curword = this.previewString[i]
-			// 		// console.log("import svg!", curword)
-			// 		ws.send(JSON.stringify({
-			// 			op: 'preview',
-			// 			font: this.font,
-			// 			word: curword
-			// 		}))
-			// 	}
-			// } else if (ws.readyState == WebSocket.CONNECTING) {
-			// 	ws.addEventListener('open', () => this.sendPreview())
-			// }
+			console.log("sendPreview")
+			if (ws.readyState === WebSocket.OPEN) {
+				let segment = this.previewString
+				svgPreviewer?.refresh()
+				for (let i = 0; i < segment.length; i++) {
+					let curword = this.previewString[i]
+					// console.log("import svg!", curword)
+					ws.send(JSON.stringify({
+						op: 'preview',
+						font: this.font,
+						word: curword
+					}))
+				}
+			} else if (ws.readyState == WebSocket.CONNECTING) {
+				ws.addEventListener('open', () => this.sendPreview())
+			}
 		},
 		typesetting() {
-			// svgPreviewer!.update()
-			// svgPreviewer!.typeSetting("0", "0", "1")
-			// svgPreviewer!.changeToPreview()
+			svgPreviewer!.update()
+			svgPreviewer!.typeSetting("2", "2", "2")
+			svgPreviewer!.changeToPreview()
 		},
 		getInfo() {
 			setTimeout(() => {
@@ -784,7 +795,6 @@ export default defineComponent({
 				// this.baseBufferMinY = minY
 				// this.baseBufferMaxX = maxX
 				// this.baseBufferMaxY = maxY
-
 				this.currentTool = svgEditor!.currentTool
 				this.showInputBox = svgEditor?.ifMarked!
 				this.showInputBox2 = svgEditor?.ifMarkedCanvas!

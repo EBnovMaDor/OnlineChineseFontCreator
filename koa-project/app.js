@@ -211,6 +211,9 @@ function handleMessage(msg) {
     e.op = 'editEnd'
     e.font = font
     e.word = word
+    server.clients.forEach((c) => {
+      c.send(JSON.stringify(e));
+    })
   }
 }
 module.exports = app

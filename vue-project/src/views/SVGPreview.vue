@@ -17,7 +17,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue'
 import { ElScrollbar } from 'element-plus'
-import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
+import SvgPreviewer from '../lib/svg-preview/SvgPreviewer'
 import { useRouter } from 'vue-router'
 import router from '@/router'
 

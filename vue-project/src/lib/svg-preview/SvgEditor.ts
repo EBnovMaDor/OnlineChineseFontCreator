@@ -220,7 +220,7 @@ export default class SvgEditor {
                 fill
             })
             this._svgPath.set(svg_id, allSegements)
-            // console.log("edit", this._svgPath)
+            console.log("edit", this._svgPath)
             this.acceptSVG()
         }
         else if (op == 'delete') {
