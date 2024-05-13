@@ -10,7 +10,7 @@
 					<el-link type="info" :underline="false">新宋体字库项目</el-link>
 					<span style="color: #909399; font-size:18px">/</span>
 					<span style="margin-left: 8px;">排版测试</span>
-					<el-dropdown trigger="click">
+					<el-dropdown trigger="click" @command="handleCommand">
 						<span class="el-dropdown-link">
 							<el-icon class="el-icon--right">
 								<arrow-down />
@@ -18,8 +18,8 @@
 						</span>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item>转到编辑</el-dropdown-item>
-								<el-dropdown-item divided>转到字库</el-dropdown-item>
+								<el-dropdown-item command="a">转到编辑</el-dropdown-item>
+								<el-dropdown-item command="b" divided>转到字库</el-dropdown-item>
 
 							</el-dropdown-menu>
 						</template>
@@ -60,12 +60,13 @@
 								<el-button type="primary" size="small" @click="sendMessage" plain> 确认 </el-button>
 								<el-button type="primary" size="small" @click="typesetting" plain> 排版 </el-button>
 							</div>
-							<div style="margin: 10px; text-align: left; font-size: 16px;">
+							<div style="margin: 10px; margin-bottom: 20px; text-align: left; font-size: 16px;">
 								<b>测试模板</b>
 							</div>
 							<el-button v-for="button in buttons" :key="button" text bg class="wrap-botton" @click="setModelText(button)">
 								{{ button }}
 							</el-button>
+							<el-button @click="setRandomText">随机乱文</el-button>
 						</div>
 					</div>
 				</div>
@@ -85,7 +86,7 @@
 	import SvgPreviewer from '../lib/font-preview/SvgPreviewer'
 	import { useRouter } from 'vue-router'
 	import router from '@/router'
-
+	import lorem from '../outerlib/lorem-cn'
 	const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 	let svgPreviewer: SvgPreviewer | undefined
 
@@ -109,7 +110,7 @@
 					"今国意我永然警转酬随风鹰",
 					"the quick brown fox jumps \nover the lazy dog",
 					"行路难！行路难！多歧路，今安在？\n长风破浪会有时，直挂云帆济沧海。",
-
+					"1. Hello,How are you?\n2. 我很好，谢谢！"
 				],
 			}
 		},
@@ -178,6 +179,15 @@
 			setModelText(modeltext: any) {
 				this.word = modeltext
 			},
+			setRandomText() {
+				this.word = lorem(Math.floor(Math.random() * 40) + 40)
+			},
+			handleCommand(command: any) {
+				if (command == 'a')
+					router.push('/Test');
+				if (command == 'b')
+					router.push('/font');
+			},
 		},
 	})
 </script>
@@ -209,14 +219,12 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		padding:0 20px 10px 10px;
-
+		padding: 0 20px 10px 10px;
 	}
 
 		.slider-block .el-slider {
 			margin-top: 5px;
 			margin-left: 0px;
-
 		}
 
 		.slider-block .demonstration {
@@ -239,20 +247,21 @@
 		width: 240px;
 		min-height: 50px;
 		margin-left: 0px !important;
-		margin-bottom:10px;
+		margin-bottom: 10px;
 	}
 </style>
 <style scoped>
 	:deep(.el-slider__input) {
 		width: 100px;
-		margin-top:5px;
-		position:relative;
-		top:-32px;
-		right:90px;
+		margin-top: 5px;
+		position: relative;
+		top: -32px;
+		right: 90px;
 	}
+
 	:deep(.el-slider__runway.show-input) {
 		margin-right: 0px;
-		margin-left:5px;
-		flex:0 0 100%;
+		margin-left: 5px;
+		flex: 0 0 100%;
 	}
 </style>
