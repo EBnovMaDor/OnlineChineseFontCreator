@@ -486,7 +486,7 @@ export default defineComponent({
 		},
 		importSVG() {
 			svgEditor?.importSVG()
-			this.sendPreview()
+			// this.sendPreview()
 		},
 		move() {
 			svgEditor?.setTool('move')
@@ -645,18 +645,21 @@ export default defineComponent({
 			const msg = JSON.parse(e.data);
 			// console.log('FE:WebSocket:message',msg)
 			if (msg.op == 'editEnd') {
-				// console.log("111")
+				console.log("editEnd")
 				this.sendPreview()
 			}
 			else if (msg.op == 'preview' || msg.op == 'previewEnd') {
 				// console.log("222")
 				if (msg.font == this.font) {
 					svgPreviewer!.handleSVG(msg)
+					// console.log(msg)
 					if(msg.op == 'previewEnd'){
 						this.previewcnt ++;
+						// console.log(this.previewcnt)
 						if(this.previewcnt == this.previewString.length){
 							this.typesetting()
 							this.previewcnt = 0
+							console.log(this.previewcnt)
 						}
 					}
 				}
@@ -752,13 +755,13 @@ export default defineComponent({
 			}
 		},
 		sendPreview() {
-			console.log("sendPreview")
+			
 			if (ws.readyState === WebSocket.OPEN) {
 				let segment = this.previewString
 				svgPreviewer?.refresh()
 				for (let i = 0; i < segment.length; i++) {
 					let curword = this.previewString[i]
-					// console.log("import svg!", curword)
+					console.log("sendPreview",i,curword)
 					ws.send(JSON.stringify({
 						op: 'preview',
 						font: this.font,
@@ -771,7 +774,7 @@ export default defineComponent({
 		},
 		typesetting() {
 			svgPreviewer!.update()
-			svgPreviewer!.typeSetting("2", "2", "2")
+			svgPreviewer!.typeSetting("2", "2", "2")// 字间距/行间距/字号
 			svgPreviewer!.changeToPreview()
 		},
 		getInfo() {

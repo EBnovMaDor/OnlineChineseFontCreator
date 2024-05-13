@@ -54,12 +54,12 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import SvgEditor from '../lib/svg-editor/SvgEditor'
-import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
+// import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
 import { useRouter } from 'vue-router'
 import router from '@/router'
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let svgEditor: SvgEditor | undefined
-let svgPreviewer: SvgPreviewer | undefined
+// let svgPreviewer: SvgPreviewer | undefined
 const ws = new WebSocket('ws://localhost:8000');
 
 export default defineComponent({
@@ -110,7 +110,7 @@ export default defineComponent({
     },
     mounted() {
         svgEditor = new SvgEditor('canvas')
-        svgPreviewer = new SvgPreviewer('preview')
+        // svgPreviewer = new SvgPreviewer('preview')
         this.getInfo()
         this.username = localStorage.getItem('username') || '';
         if (!localStorage.getItem('username')) {

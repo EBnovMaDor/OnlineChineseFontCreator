@@ -140,7 +140,7 @@ export default class SvgPreviewer {
     }
     public handleSVG(e: any) {
         let op = e.op
-        if (op == 'preview') {
+        if (op == 'Fontpreview') {
             let svg_id = e.svg_id
             let startPointX = Number(e.startPointX) * this._rate
             let startPointY = Number(e.startPointY) * this._rate
@@ -213,7 +213,7 @@ export default class SvgPreviewer {
             })
             this._svgPath.set(svg_id, allSegements)
         }
-        else if (op == 'previewEnd') {
+        else if (op == 'FontpreviewEnd') {
             this._svgPreview.push(this._svgPath)
             // console.log(this._svgPreview)
             this._svgPath = new Map<number, Array<any>>()

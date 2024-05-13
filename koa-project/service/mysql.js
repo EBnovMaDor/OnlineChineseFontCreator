@@ -4,9 +4,11 @@ const db_config = {
     user: "localhost",
     password: "123456",
     port: "3306",
-    database: "testdb"
+    database: "testdb",
+    useConnectionPooling: true
 }
 let connect = mysql.createConnection(db_config);
+// console.log("connect",connect)
 class svgDatabase {
     static addSvg(list) {
         let sqlQuery = 'insert into svg (font,word,svg_id,startPointX,startPointY,endPointX,endPointY,line,isClose,fill) values (?,?,?,?,?,?,?,?,?,?)'

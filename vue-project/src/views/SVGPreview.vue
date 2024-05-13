@@ -82,7 +82,7 @@
 	import { defineComponent, ref, onMounted } from 'vue'
 	import { ArrowDown } from '@element-plus/icons-vue'
 	import { ElScrollbar } from 'element-plus'
-	import SvgPreviewer from '../lib/svg-preview/SvgPreviewer'
+	import SvgPreviewer from '../lib/font-preview/SvgPreviewer'
 	import { useRouter } from 'vue-router'
 	import router from '@/router'
 
@@ -166,7 +166,7 @@
 						let curword = this.word[i]
 						console.log("import svg!", curword)
 						ws.send(JSON.stringify({
-							op: 'preview',
+							op: 'Fontpreview',
 							font: this.font,
 							word: curword
 						}))

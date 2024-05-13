@@ -102,7 +102,25 @@ function handleMessage(msg) {
           c.send(JSON.stringify(e));
         })
       }
+      console.log("preview:",word)
       var jsonObj = {op:"previewEnd",font:font,word:word};
+      server.clients.forEach((c) => {
+        c.send(JSON.stringify(jsonObj));
+      })
+    })
+  }
+  else if (op == 'Fontpreview') {
+    svgDatabase.findSvg([font,word]).then(res => {
+      // console.log('Count:', res);
+      for (let e of res) {
+        e.op = 'Fontpreview'
+        // console.log("e:", e.toString())
+        server.clients.forEach((c) => {
+          c.send(JSON.stringify(e));
+        })
+      }
+      console.log("preview:",word)
+      var jsonObj = {op:"FontpreviewEnd",font:font,word:word};
       server.clients.forEach((c) => {
         c.send(JSON.stringify(jsonObj));
       })
