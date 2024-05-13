@@ -10,7 +10,7 @@
 					<el-link type="info" :underline="false">新宋体字库项目</el-link>
 					<span style="color: #909399; font-size:18px">/</span>
 					<span style="margin-left: 8px;">字库概览</span>
-					<el-dropdown trigger="click">
+					<el-dropdown trigger="click"@command="handleCommand">
 						<span class="el-dropdown-link">
 							<el-icon class="el-icon--right">
 								<arrow-down />
@@ -18,10 +18,9 @@
 						</span>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item>版本历史</el-dropdown-item>
-								<el-dropdown-item divided>转到任务</el-dropdown-item>
-								<el-dropdown-item>转到项目</el-dropdown-item>
-								<el-dropdown-item divided>修改字库</el-dropdown-item>
+								<el-dropdown-item command="a">转到编辑</el-dropdown-item>
+								<el-dropdown-item command="b">转到排版</el-dropdown-item>
+								<el-dropdown-item divided command="c">修改字库</el-dropdown-item>
 								<el-dropdown-item disabled>删除字库</el-dropdown-item>
 
 							</el-dropdown-menu>
@@ -279,7 +278,15 @@
 						this.selectfonts.push(font);
 					}
 				}
+			},
+			handleCommand(command: any) {
+				if (command == 'a')
+					router.push('/Test');
+				if (command == 'b')
+					router.push('/svgPreview');
+				if (command == 'c') {
 
+				}
 			},
 		},
 	})
@@ -306,5 +313,9 @@
 <style scoped>
 	:deep(.el-select__wrapper) {
 		background-color: #EAEAEA;
+	}
+	:deep(.el-collapse-item__arrow){
+		margin-right:25px;
+		font-size:25px;
 	}
 </style>

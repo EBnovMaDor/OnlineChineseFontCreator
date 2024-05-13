@@ -10,7 +10,7 @@
 					<el-link type="info" :underline="false">新宋体字库项目</el-link>
 					<span style="color: #909399; font-size:18px">/</span>
 					<span style="margin-left: 8px;">排版测试</span>
-					<el-dropdown trigger="click">
+					<el-dropdown trigger="click" @command="handleCommand">
 						<span class="el-dropdown-link">
 							<el-icon class="el-icon--right">
 								<arrow-down />
@@ -18,8 +18,8 @@
 						</span>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item>转到编辑</el-dropdown-item>
-								<el-dropdown-item divided>转到字库</el-dropdown-item>
+								<el-dropdown-item command="a">转到编辑</el-dropdown-item>
+								<el-dropdown-item command="b" divided>转到字库</el-dropdown-item>
 
 							</el-dropdown-menu>
 						</template>
@@ -181,7 +181,13 @@
 			},
 			setRandomText() {
 				this.word = lorem(Math.floor(Math.random() * 40) + 40)
-			}
+			},
+			handleCommand(command: any) {
+				if (command == 'a')
+					router.push('/Test');
+				if (command == 'b')
+					router.push('/font');
+			},
 		},
 	})
 </script>
