@@ -79,6 +79,9 @@ export default class GUIRing implements GUIBaseElement {
     get isSelected() {
         return this._isSelected
     }
+    get guiSegmentId() {
+        return -1
+    }
 
     set isSelected(isSelected: boolean) {
         console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)

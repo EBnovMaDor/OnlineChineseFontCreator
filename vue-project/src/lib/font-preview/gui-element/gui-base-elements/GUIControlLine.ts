@@ -63,7 +63,6 @@ export default class GUIControlLine implements GUILine {
     }
 
     update(guiElementId: number, isSelected: boolean): void {
-        console.debug("update", this)
         if (this._onPoint!.isSelected && this._offPoint!.isSelected) {
             this._isSelected = true
             this._virtualBufferElement!.config.opacity = 1

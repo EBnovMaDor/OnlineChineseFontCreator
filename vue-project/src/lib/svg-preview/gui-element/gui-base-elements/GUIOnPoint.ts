@@ -58,13 +58,6 @@ export default class GUIOnPoint implements GUIBaseElement {
 
         this._previousControlPoint = previousControlPoint
         this._nextControlPoint = nextControlPoint
-
-        // this._virtualBufferElement.konvaElement.on("pointerdblclick", () => {
-        //     if(this._previousControlPoint && this._nextControlPoint) {
-        //         this._isTangency = !this._isTangency
-        //     }
-        //     console.log("pointer dbl click", this)
-        // })
     }
 
     delete() {
@@ -123,7 +116,6 @@ export default class GUIOnPoint implements GUIBaseElement {
     }
 
     set isSelected(isSelected: boolean) {
-        console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
         if (this._isSelected == isSelected) return
         const { gui } = GlobalManager.instance
         //更新自己的状态

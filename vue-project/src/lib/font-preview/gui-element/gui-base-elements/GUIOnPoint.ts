@@ -58,13 +58,6 @@ export default class GUIOnPoint implements GUIBaseElement {
 
         this._previousControlPoint = previousControlPoint
         this._nextControlPoint = nextControlPoint
-
-        // this._virtualBufferElement.konvaElement.on("pointerdblclick", () => {
-        //     if(this._previousControlPoint && this._nextControlPoint) {
-        //         this._isTangency = !this._isTangency
-        //     }
-        //     console.log("pointer dbl click", this)
-        // })
     }
 
     delete() {

@@ -79,8 +79,6 @@ export default class GUI implements Observer {
     }
 
     update(guiElementId: number, isSelected: boolean): void {
-        console.debug("GUI Element Selected Update", guiElementId, isSelected)
-        console.debug("this.guiBaseElements", this.guiBaseElements)
         if (isSelected) {
             this.selectedElements.set(guiElementId, this.guiBaseElements.get(guiElementId)!)
         } else {

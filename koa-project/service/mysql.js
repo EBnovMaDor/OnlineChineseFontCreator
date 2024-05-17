@@ -8,7 +8,6 @@ const db_config = {
     useConnectionPooling: true
 }
 let connect = mysql.createConnection(db_config);
-// console.log("connect",connect)
 class svgDatabase {
     static addSvg(list) {
         let sqlQuery = 'insert into svg (font,word,svg_id,startPointX,startPointY,endPointX,endPointY,line,isClose,fill) values (?,?,?,?,?,?,?,?,?,?)'
@@ -54,9 +53,7 @@ class svgDatabase {
                     console.error('Error inserting data:', error);
                     return;
                 }
-                // console.log('Data inserted successfully.', results);
                 var res = JSON.parse(JSON.stringify(results));
-                // console.log(res[0]['count(*)']);
                 resolve(res[0]['count(*)']);
             });
         });

@@ -6,8 +6,7 @@ const json = require('koa-json')
 const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const logger = require('koa-logger')
-// const index = require('./routes/index')
-// const users = require('./routes/users')
+
 const svgDatabase = require('./service/mysql')
 // error handler
 onerror(app)
@@ -25,35 +24,13 @@ app.use(views(__dirname + '/views', {
   extension: 'ejs'
 }))
 
-// logger
-// app.use(async (ctx, next) => {
-//   const start = new Date()
-//   await next()
-//   const ms = new Date() - start
-//   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
-// })
 
-// routes
-// app.use(index.routes(), index.allowedMethods())
-// app.use(users.routes(), users.allowedMethods())
-// server port
 app.listen(1129);
 console.log('App started at port 1129...');
 // error-handling
 app.on('error', (err, ctx) => {
   console.error('server error', err, ctx)
 });
-
-
-// const mysql = require("mysql");
-// const db_config = {
-//   host: "localhost",
-//   user: "localhost",
-//   password: "123456",
-//   port: "3306",
-//   database: "testdb"
-// }
-// let connect = mysql.createConnection(db_config);
 
 const Ws = require('ws');
 const server = new Ws.Server({ port: 8000 });
@@ -82,10 +59,8 @@ function handleMessage(msg) {
   const word = jsonObj.word
   if (op == 'i') {
     svgDatabase.findSvg([font,word]).then(res => {
-      // console.log('Count:', res);
       for (let e of res) {
         e.op = 'edit'
-        // console.log("e:", e.toString())
         server.clients.forEach((c) => {
           c.send(JSON.stringify(e));
         })
@@ -94,10 +69,8 @@ function handleMessage(msg) {
   }
   else if (op == 'preview') {
     svgDatabase.findSvg([font,word]).then(res => {
-      // console.log('Count:', res);
       for (let e of res) {
         e.op = 'preview'
-        // console.log("e:", e.toString())
         server.clients.forEach((c) => {
           c.send(JSON.stringify(e));
         })
@@ -111,15 +84,12 @@ function handleMessage(msg) {
   }
   else if (op == 'Fontpreview') {
     svgDatabase.findSvg([font,word]).then(res => {
-      // console.log('Count:', res);
       for (let e of res) {
         e.op = 'Fontpreview'
-        // console.log("e:", e.toString())
         server.clients.forEach((c) => {
           c.send(JSON.stringify(e));
         })
       }
-      console.log("preview:",word)
       var jsonObj = {op:"FontpreviewEnd",font:font,word:word};
       server.clients.forEach((c) => {
         c.send(JSON.stringify(jsonObj));
@@ -150,7 +120,6 @@ function handleMessage(msg) {
     e.line = lines
     e.isClose = isClose
     e.fill = fill
-    // console.log("e:", e)
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
     })
@@ -169,7 +138,6 @@ function handleMessage(msg) {
     const arr1 = [startPointX, startPointY, endPointX, endPointY, lines, isClose,fill, font,word, svg_id]
     const arr2 = [font, word,svg_id]
     svgDatabase.countSvg(arr2).then(count => {
-      // console.log('Count:', res);
       if(count > 0){
         svgDatabase.updateSvg(arr1)
       }
@@ -190,7 +158,6 @@ function handleMessage(msg) {
     e.isClose = isClose
     e.fill = fill
 
-    // console.log("e:", lines)
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
     })
@@ -204,7 +171,6 @@ function handleMessage(msg) {
     e.svg_id = svg_id
     e.font = font
     e.word = word
-    // console.log("e:", e)
     server.clients.forEach((c) => {
       c.send(JSON.stringify(e));
     })

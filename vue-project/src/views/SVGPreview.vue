@@ -152,20 +152,16 @@
 			},
 			handleWsMessage(e: any) {
 				const msg = JSON.parse(e.data);
-				// console.log('FE:WebSocket:message',msg)
 				if (msg.font == this.font) {
 					svgPreviewer!.handleSVG(msg)
 				}
 			},
 			sendMessage() {
-				// svgPreviewer = new SvgPreviewer('preview')
-
 				if (ws.readyState === WebSocket.OPEN) {
 					let segment = this.word
 					svgPreviewer?.refresh()
 					for (let i = 0; i < segment.length; i++) {
 						let curword = this.word[i]
-						console.log("import svg!", curword)
 						ws.send(JSON.stringify({
 							op: 'Fontpreview',
 							font: this.font,

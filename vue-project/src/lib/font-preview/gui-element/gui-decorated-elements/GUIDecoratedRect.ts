@@ -31,5 +31,7 @@ export default class GUIDecoratedRect implements GUIDecorate {
     get isVisible() {
         return this._isVisible
     }
-
+    get guiSegmentId() {
+        return -1
+    }
 }

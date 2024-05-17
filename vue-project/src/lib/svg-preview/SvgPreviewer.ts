@@ -5,18 +5,14 @@ import Queue from './util/Queue';
 
 import BaseBuffer from './core/BaseBuffer';
 import ViewPort from './core/ViewPort';
-import MoveViewPortEvent from './font-creator-event/MoveViewPortEvent';
-import ZoomViewPortEvent from './font-creator-event/ZoomViewPortEvent';
 import GUI from './core/GUI';
 import GlobalManager from './GlobalManager';
 import Renderer from './core/Renderer';
-import ZoomViewPortByWheelEvent from './font-creator-event/ZoomViewPortByWheel';
 import GUIAttrs from "./gui-element/gui-base-elements/GUIAttrs";
 
 import parse from 'parse-svg-path'
 import abs from 'abs-svg-path'
 import normalize from 'normalize-svg-path'
-import DragElementsEvent from './font-creator-event/DragElementsEvent';
 import { Shape } from 'konva/lib/Shape';
 import { Stage } from 'konva/lib/Stage';
 import { isDecoratedShape } from './util/DecoratedShape';
@@ -48,13 +44,6 @@ const isFinger = (e: PointerEvent) => e.pointerType == 'touch'
 const isPen = (e: PointerEvent) => e.pointerType == 'pen'
 
 export default class SvgPreviewer {
-    /** system event */
-    private _isPointerDown: { primary: boolean; secondary: boolean; } = { primary: false, secondary: false };
-    private _currentEvent: { primary: PointerEvent | null; secondary: PointerEvent | null; } = { primary: null, secondary: null };
-    private _lastEvent: { primary: PointerEvent | null; secondary: PointerEvent | null; } = { primary: null, secondary: null };
-
-    /** system toolbox */
-    private _currentTool: string = 'move';
 
     private _isDragging: boolean = false;
     private _isSelecting: boolean = false;
@@ -83,7 +72,6 @@ export default class SvgPreviewer {
     public static anim: Konva.Animation | null = null;
 
     constructor(divId: string) {
-        console.info("SvgPreviewer Init")
         this.divId = divId
         GlobalManager.instance.baseBuffer = this._baseBuffer
 
@@ -107,8 +95,6 @@ export default class SvgPreviewer {
 
         this._gui.initDecoratedRect()
 
-        this.bindPointerEvents()
-        this.bindWheelEvents()
 
         SvgPreviewer.anim = new Konva.Animation((frame) => {
             this._fps = frame?.frameRate!
@@ -215,10 +201,8 @@ export default class SvgPreviewer {
         }
         else if (op == 'previewEnd') {
             this._svgPreview.push(this._svgPath)
-            // console.log(this._svgPreview)
             this._svgPath = new Map<number, Array<any>>()
             this._svgWidth.push([this._wordMaxXPos, this._wordMinXPos, e.word])
-            // console.log("svgwidth", this._svgWidth)
             this._lineSpace = (this._wordMaxYPos - this._wordMinYPos > this._lineSpace) ? this._wordMaxYPos - this._wordMinYPos : this._lineSpace
             this._wordMaxXPos = -100
             this._wordMinXPos = 900
@@ -248,7 +232,6 @@ export default class SvgPreviewer {
                 currentY = currentY
             }
             else {
-                // 随意随意随意随意随意随意随意随意随,意随意
                 if (this._punctuation.includes(this._svgWidth[i][2])) {
                     let last = this._svgPostion[this._svgPostion.length - 1]
                     this._svgPostion[this._svgPostion.length - 1] = [0, currentY + lineSpacing, fontSize]
@@ -264,23 +247,6 @@ export default class SvgPreviewer {
                 }
             }
         }
-    }
-
-    
-    public acceptSVG() {
-        this._gui!.guiElementIndex = 0
-        for (let previewID = 0; previewID < this._svgPreview.length; previewID++) {
-            let currentSVGPath = this._svgPreview[previewID]
-            for (let id of currentSVGPath.keys()) {
-                let i = currentSVGPath.get(id)!
-                // this.renderOneSegment(i[0])
-            }
-        }
-        this.changeToPreview()
-    }
-
-    get currentTool(): string {
-        return this._currentTool
     }
 
     get viewPort(): ViewPort {
@@ -299,152 +265,11 @@ export default class SvgPreviewer {
         return this._fps
     }
 
-    public setTool(tool: string): void {
-        this._currentTool = tool
-    }
-
-    /** IPAD单指移动 / PC鼠标拖动 */
-    private moveViewBox(e: PointerEvent): void {
-        // if (e.target != this._canvas) return
-        if (this._currentTool == 'move'
-            && this._isPointerDown.primary
-            && this._lastEvent.primary
-            && !this._isPointerDown.secondary
-            && isFingerOrMouse(this._currentEvent.primary!)) {
-            let { movementX, movementY } = e
-            // fix for touch 
-            if (movementX == undefined) {
-                movementX = this._currentEvent.primary!.screenX - this._lastEvent.primary!.screenX
-                movementY = this._currentEvent.primary!.screenY - this._lastEvent.primary!.screenY
-            }
-            this._eventHandler.addEvent(new MoveViewPortEvent(movementX, movementY, e))
-        }
-    }
-
-    private dragElements(e: PointerEvent, isFinal: boolean = false): void {
-        if (this._gui!.selectedElements.size != 0
-            && (this._currentTool == 'editor' || this._currentTool == 'addStraightLine' || this._currentTool == 'addCurve' || this._currentTool == 'shapeMark')
-            && this._isDragging
-            && this._isPointerDown.primary
-            && this._lastEvent.primary
-            && !this._isPointerDown.secondary
-            && isFingerOrMouse(this._currentEvent.primary!)
-        ) {
-            // console.log("拖动中——")
-            let { movementX, movementY } = e
-            // fix for touch 
-            if (movementX == undefined) {
-                movementX = this._currentEvent.primary!.screenX - this._lastEvent.primary!.screenX
-                movementY = this._currentEvent.primary!.screenY - this._lastEvent.primary!.screenY
-            }
-            this._eventHandler.addEvent(new DragElementsEvent(movementX, movementY, this._gui!.selectedElements, e, isFinal))
-            this._eventHandler.addEvent(new RefreshSEBBoxEvent(e))
-        }
-    }
-
-    /** IPAD 双指缩放 */
-    private zoomViewBox(e: PointerEvent): void {
-        if (this._isPointerDown.primary && isFinger(this._currentEvent.primary!)
-            && this._isPointerDown.secondary && isFinger(this._currentEvent.secondary!)
-        ) {
-            if (this._lastEvent.primary == null || this._lastEvent.secondary == null) return
-            if (this._currentEvent.primary == null || this._currentEvent.secondary == null) return
-
-            this._eventHandler.addEvent(new ZoomViewPortEvent(
-                this._lastEvent.primary.clientX, this._lastEvent.primary.clientY,
-                this._currentEvent.primary.clientX, this._currentEvent.primary.clientY,
-                this._lastEvent.secondary.clientX, this._lastEvent.secondary.clientY,
-                this._currentEvent.secondary.clientX, this._currentEvent.secondary.clientY, e)
-            )
-        }
-    }
-
-    /** 触控、鼠标、笔 */
-    private async bindPointerEvents() {
-        let that = this
-        const isPrimary = (e: PointerEvent) => e.isPrimary
-
-        const onPointerDown = (e: KonvaEventObject<PointerEvent>) => {
-            // console.debug("onpointer down")
-        }
-
-        const onPointerMove = (e: KonvaEventObject<PointerEvent>) => {
-
-            this.moveViewBox(e.evt)
-            this.zoomViewBox(e.evt)
-
-            this.dragElements(e.evt, false)
-        }
-
-        const onPointerUp = (e: KonvaEventObject<PointerEvent>) => {
-            // console.debug("onpointer up")
-        }
-
-        const onPointerLeave = (e: PointerEvent) => {
-        }
-
-        /** We use PointerEvent, PointerEvent extends from MouseEvent
-         *  @link https://developer.mozilla.org/en-US/docs/web/api/pointerevent
-         *  
-         *  Attribute 'pointerType' shows the type of pointer device that triggered the event,
-         *  it can be 'mouse', 'pen' or 'touch'
-         */
-        this._gui!.canvas.on('pointerdown', (e: KonvaEventObject<PointerEvent>) => {
-            onPointerDown(e)
-        });
-
-        this._gui!.canvas.on('pointermove', (e: KonvaEventObject<PointerEvent>) => {
-            onPointerMove(e)
-        })
-
-        this._gui!.canvas.on('pointerup', (e: KonvaEventObject<PointerEvent>) => {
-            onPointerUp(e)
-        })
-
-        this._gui!.canvas.on('mouseover', (e) => {
-            if (this._currentTool == 'move') document.body.style.cursor = 'pointer';
-        })
-
-        this._gui!.canvas.on('mouseout', (e) => {
-            if (this._currentTool == 'move') document.body.style.cursor = 'default';
-        });
-
-        // fix for mouse leave
-        this._gui!.divElement.onpointerleave = onPointerLeave
-    }
-
-    /** PC 鼠标滚轮 + MAC触控板 支持 */
-    private bindWheelEvents() {
-        let that = this
-        this._gui!.canvas.addEventListener('wheel', function (e: any) {
-            // 阻止默认事件，防止页面滚动
-            e.preventDefault();
-
-            if (e.altKey) {
-                // PC：ctrl + 滚轮 / 触控板：双指向内向外 = 缩放
-                that._eventHandler.addEvent(new ZoomViewPortByWheelEvent(e.clientX, e.clientY, e.deltaY, e))
-            } else if (e.shiftKey) {
-                // PC：shift + 滚轮 = 左右滑动
-                that._eventHandler.addEvent(new MoveViewPortEvent(-e.deltaY, 0, e))
-            } else {
-                // PC：单纯滚轮 / 触控板双指左右上下 = 滑动
-                that._eventHandler.addEvent(new MoveViewPortEvent(-e.deltaX, -e.deltaY, e))
-            }
-        });
-    }
-
-    public test() {
-        this.saveSVG()
-        this.changeToPreview()
-    }
-
     public changeToPreview() {
         
         let falseArray = []
         for (let previewID = 0; previewID < this._svgPreview.length; previewID++) {
-            console.log("previewID", previewID)
             let currentSVGPath = this._svgPreview[previewID]
-            console.log("currentSVGPath", currentSVGPath)
 
             for (let id of currentSVGPath.keys()) {
                 let i = currentSVGPath.get(id)!
@@ -527,7 +352,6 @@ export default class SvgPreviewer {
         if (text[0] == 'T') {
             let point = new Point(text[1], text[2]);
             let guiText = new GUIText(point, text[3]);
-            console.log(guiText)
             return
         }
         let addX = this._svgPostion[previewId][0]

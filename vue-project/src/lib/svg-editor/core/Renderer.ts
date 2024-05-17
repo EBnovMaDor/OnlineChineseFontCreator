@@ -32,7 +32,6 @@ export default class Renderer {
         let minimalRenderY = Math.floor(minPos.bufferY)
         let maximalRenderX = Math.floor(maxPos.bufferX)
         let maximalRenderY = Math.floor(maxPos.bufferY)
-        // console.log(minimalRenderX, minimalRenderY, maximalRenderX, maximalRenderY)
         if ((maximalRenderX - minimalRenderX) < 100) {
             let points = []
             let j = 0
@@ -96,7 +95,6 @@ export default class Renderer {
                 j++
             }
             if (!baseBuffer.horizontalGrid) {
-                // console.log(points)
                 let horizontalGrid = new Konva.Line({
                     points: points,
                     stroke: 'black',

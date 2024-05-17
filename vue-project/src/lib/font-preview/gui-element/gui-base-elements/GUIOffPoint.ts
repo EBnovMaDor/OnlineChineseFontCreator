@@ -44,9 +44,6 @@ export default class GUIOffPoint implements GUIBaseElement {
     delete() {
         let { gui } = GlobalManager.instance
         gui.deleteGUIBaseElement(this)
-        // 对于offpoint而言并不知道自己对于onpoint而言是前控制点还是后控制点
-        // if(this._correspondingGUIPoint)
-        //     this._correspondingGUIPoint.previousControlPoint = null
         if (this._correspondingGUIControlLine)
             this._correspondingGUIControlLine.offPoint = null
     }
@@ -79,7 +76,6 @@ export default class GUIOffPoint implements GUIBaseElement {
     }
 
     set isSelected(isSelected: boolean) {
-        console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
         if (this._isSelected == isSelected) return
         const { gui } = GlobalManager.instance
         //更新自己的状态

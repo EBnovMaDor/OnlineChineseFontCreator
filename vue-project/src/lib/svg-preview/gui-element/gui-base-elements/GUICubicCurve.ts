@@ -50,7 +50,6 @@ export default class GUICubicCurve implements GUILine {
         this._nextGUIPoint = nextGUIPoint
 
         this._virtualBufferElement.konvaElement.on("pointerdblclick", (e) => {
-            console.log("pointer dbl click", this)
             let currentGUILine = this
             let previousGUILine = this.previousGUIPoint!.previousGUILine
             while (previousGUILine != currentGUILine) {
@@ -84,7 +83,6 @@ export default class GUICubicCurve implements GUILine {
     }
 
     update(guiElementId: number, isSelected: boolean): void {
-        console.debug("update", this)
         if (this._previousGUIPoint!.isSelected && this._nextGUIPoint!.isSelected) {
             this._isSelected = true
             this._virtualBufferElement!.config.opacity = 1
@@ -112,7 +110,6 @@ export default class GUICubicCurve implements GUILine {
     }
 
     set isSelected(isSelected: boolean) {
-        console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
         if (this._isSelected == isSelected
             && this.previousGUIPoint!.isSelected == isSelected
             && this.nextGUIPoint!.isSelected == isSelected

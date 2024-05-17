@@ -31,5 +31,8 @@ export default class GUIDecoratedCircle implements GUIDecorate {
     get isVisible() {
         return this._isVisible
     }
+    get guiSegmentId() {
+        return -1
+    }
 
 }

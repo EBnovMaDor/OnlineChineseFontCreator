@@ -47,7 +47,6 @@ export default class GUIMarkLine implements GUILine {
 
     delete() {
         let { gui } = GlobalManager.instance
-        // console.log("delete in guimarkline")
         gui.deleteGUIBaseElement(this)
     }
 
@@ -89,7 +88,6 @@ export default class GUIMarkLine implements GUILine {
     }
 
     set isSelected(isSelected: boolean) {
-        console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
         if (this._isSelected == isSelected
             && this._previousGUIPoint!.isSelected == isSelected
             && this._nextGUIPoint!.isSelected == isSelected) return

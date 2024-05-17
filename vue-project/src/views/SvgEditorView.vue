@@ -4,8 +4,6 @@
         <div>System Current Tool: {{ currentTool }}</div>
         <div id="canvas" style="width: 60vw; height: 60vh;margin-top:20px;"></div>
         <div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div>
-        <el-button type="primary" @click="test"> Test </el-button>
-
         <el-input type="textarea" :rows="5" placeholder="请输入" v-model="word" style="margin-bottom:20px">
         </el-input>
         <el-button type="primary" @click="move"> move </el-button>
@@ -36,8 +34,6 @@
                 @click="submitInput">提交</el-button></div>
         <div v-if="showInputBox2"><input type="text" v-model="inputValue" placeholder="请输入值"><el-button
                 @click="submitInput2">提交</el-button></div>
-        <!-- <div v-else>empty</div> -->
-        <!-- <div v-if="showCommentBox">元素编号：{{ markedId }} ; 标注：{{ comment }}<el-button @click="editComment">编辑</el-button></div> -->
         <div v-for="item in list" :key="item.gui_id">
             <div :class="(item.gui_id == markedId && showInputBox == true) ? 'back-red' : 'back-blue'"
                 @mouseenter="markShow(item.gui_id)" @mouseleave="markHide(item.gui_id)">元素编号：{{ item.gui_id }} ; 标注：{{
@@ -54,12 +50,10 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import SvgEditor from '../lib/svg-editor/SvgEditor'
-// import SvgPreviewer from '../lib/svg-editor/SvgPreviewer'
 import { useRouter } from 'vue-router'
 import router from '@/router'
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 let svgEditor: SvgEditor | undefined
-// let svgPreviewer: SvgPreviewer | undefined
 const ws = new WebSocket('ws://localhost:8000');
 
 export default defineComponent({
@@ -68,7 +62,6 @@ export default defineComponent({
         return {
             showInputBox: false,
             showInputBox2: false,
-            // showCommentBox:false,
             inputValue: "",
             fps: 60,
             viewPortX: 0,
@@ -102,7 +95,6 @@ export default defineComponent({
             length2: 0,
             angle1: 0,
             angle2: 0,
-            // svg_cnt: 1,
             word: "意",
             font: "font_1",
             previewString: "今国意我永然警转酬随风鹰"
@@ -110,7 +102,6 @@ export default defineComponent({
     },
     mounted() {
         svgEditor = new SvgEditor('canvas')
-        // svgPreviewer = new SvgPreviewer('preview')
         this.getInfo()
         this.username = localStorage.getItem('username') || '';
         if (!localStorage.getItem('username')) {
@@ -128,10 +119,6 @@ export default defineComponent({
         },
         setFont() {
             svgEditor?.importSVG()
-            // console.log("111")
-        },
-        test() {
-            svgEditor?.test()
         },
         move() {
             svgEditor?.setTool('move')
@@ -197,42 +184,28 @@ export default defineComponent({
             svgEditor!.ifMarked = true
         },
         deleteComment(id: number) {
-            // svgEditor!.unMark(this.markedId)
             svgEditor?.markComment(this.markedId, "")
             svgEditor!.ifSend = 1
-            // this.markedId = 
         },
         submitInput() {
-            // console.log(this.inputValue.length);
             if (this.inputValue.length == 0) {
-                // console.log("输入不能为空")
                 svgEditor!.unMark(this.markedId)
                 svgEditor!.markComment(this.markedId, this.inputValue)
                 return
             }
-            // console.log(this.markedId)
             svgEditor!.markComment(this.markedId, this.inputValue)
-            // console.log("wozaisubmit",this.ifSend)
             svgEditor!.ifSend = 1
-            // 隐藏输入框
             this.inputValue = ""
             svgEditor!.ifMarked = false
-            // this.showInputBox=false;
         },
         submitInput2() {
-            // console.log(this.inputValue.length);
             if (this.inputValue.length == 0) {
-                console.log("输入不能为空")
-                // svgEditor!.unMark(this.markedId)
-                // svgEditor?.markComment(this.markedId,this.inputValue)
                 return
             }
             svgEditor?.markOnCanvas(svgEditor.markPoint.x, svgEditor.markPoint.y, this.inputValue)
             svgEditor!.ifSend = 1
-            // 隐藏输入框
             this.inputValue = ""
             svgEditor!.ifMarkedCanvas = false
-            // this.showInputBox=false;
         },
         markShow(id: number) {
             svgEditor!.Mark(id)
@@ -251,29 +224,16 @@ export default defineComponent({
         },
         handleWsMessage(e: any) {
             const msg = JSON.parse(e.data);
-            // console.log('FE:WebSocket:message',msg)
             if (msg.font == this.font && msg.word == this.word) {
                 svgEditor!.handleSVG(msg)
             }
-            // if(svgEditor)
-            //     svgEditor.acceptSVG(msg.svg)
             this.list = []
             let comment = svgEditor!.transCmt()
-            // console.log(comment)
             for (let i = 0; i < comment.length; i++) {
-                // console.log("111")
                 var mark = { gui_id: comment[i], gui_mark: comment[i + 1] }
                 i++
                 this.list.push(mark)
             }
-            // console.log(this.list)
-        },
-        changeActive(e: MouseEvent) {
-            // console.log(e);
-        },
-        removeActive(e: MouseEvent) {
-            // if (e.currentTarget)
-            // (e.currentTarget as HTMLElement).className = '';
         },
         getInfo() {
             setTimeout(() => {
@@ -328,17 +288,12 @@ export default defineComponent({
                     this.angle1 = posSegment[6]
                     this.angle2 = posSegment[7]
                 }
-                // this.showCommentBox = svgEditor?.isMarked!
-                // if(this.showCommentBox){
-                //     this.comment = svgEditor!.showComment(this.markedId)!
-                // }
                 this.ifSend = svgEditor?.ifSend!
                 if (this.ifSend == 1) {
                     svgEditor!.ifSend = 0
                     let segment = svgEditor!.msgSend
                     for (let i = 0; i < segment.length; i++) {
                         if (segment[i][0] == 'i') {
-                            // console.log("import svg!")
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
@@ -346,7 +301,6 @@ export default defineComponent({
                             }))
                         }
                         else if (segment[i][0] == 'edit') {
-                            console.log("edit!", "i", i, segment)
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
@@ -355,10 +309,8 @@ export default defineComponent({
                                 svg: segment[i][2],
                                 fill: segment[i][3]
                             }))
-                            console.log(segment[i][3])
                         }
                         else if (segment[i][0] == 'add') {
-                            console.log("add", segment[i])
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
@@ -367,10 +319,8 @@ export default defineComponent({
                                 svg: segment[i][2],
                                 fill: segment[i][3]
                             }))
-                            console.log(segment[i][3])
                         }
                         else if (segment[i][0] == 'delete') {
-                            // console.log("delete","i",i,segment[i])
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
@@ -379,7 +329,6 @@ export default defineComponent({
                             }))
                         }
                         else if (segment[i][0] == 'changeFill') {
-                            console.log("changeFill", "i", i, segment[i])
                             ws.send(JSON.stringify({
                                 op: segment[i][0],
                                 font: this.font,
@@ -389,14 +338,6 @@ export default defineComponent({
                             }))
                         }
                     }
-
-                    // let segment = svgEditor!.transSVG()
-                    // ws.send(JSON.stringify({
-                    //     font : this.font,
-                    //     svg_id: ,
-                    //     svg:segment
-                    // }))
-                    // this.svg_cnt = this.svg_cnt+1
                 }
                 this.getInfo()
             }, 50)

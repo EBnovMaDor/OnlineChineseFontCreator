@@ -54,7 +54,7 @@ export default class BaseBufferRect implements BaseBufferElement {
         let normalWidth = viewPort.bufferWidthToNormalWidth(this._width)
         let normalHeight = viewPort.bufferHeightToNormalHeight(this._height)
         if (Number.isNaN(normalX) || Number.isNaN(normalY) || Number.isNaN(normalWidth) || Number.isNaN(normalHeight) || Number.isNaN(gui.canvasWidth) || Number.isNaN(gui.canvasHeight)) {
-            console.log(normalX, normalY, normalWidth, normalHeight);
+            // console.log(normalX, normalY, normalWidth, normalHeight);
         }          
         else {
             this.konvaElement.x(normalX * gui.canvasWidth)

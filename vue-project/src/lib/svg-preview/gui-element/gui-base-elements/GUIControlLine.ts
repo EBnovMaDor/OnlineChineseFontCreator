@@ -63,7 +63,6 @@ export default class GUIControlLine implements GUILine {
     }
 
     update(guiElementId: number, isSelected: boolean): void {
-        console.debug("update", this)
         if (this._onPoint!.isSelected && this._offPoint!.isSelected) {
             this._isSelected = true
             this._virtualBufferElement!.config.opacity = 1
@@ -91,7 +90,6 @@ export default class GUIControlLine implements GUILine {
     }
 
     set isSelected(isSelected: boolean) {
-        console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
         const { gui } = GlobalManager.instance
         if (this._isSelected == isSelected
             && this._onPoint!.isSelected == isSelected

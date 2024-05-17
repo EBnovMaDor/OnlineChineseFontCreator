@@ -79,9 +79,11 @@ export default class GUIRing implements GUIBaseElement {
     get isSelected() {
         return this._isSelected
     }
+    get guiSegmentId() {
+        return -1
+    }
 
     set isSelected(isSelected: boolean) {
-        console.debug("isSelected,this.isSelected", isSelected, this.isSelected, this)
         if (this._isSelected == isSelected) return
         const { gui } = GlobalManager.instance
         //更新自己的状态
