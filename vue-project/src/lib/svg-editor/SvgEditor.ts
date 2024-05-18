@@ -1396,6 +1396,7 @@ export default class SvgEditor {
                         let newX = 0, newY = 0
                         let startPoint
                         let startGUIPoint
+                        let endX = 0, endY = 0
                         if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
                             if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
                                 newX = point2!.baseBufferElement.center.x
@@ -1409,6 +1410,9 @@ export default class SvgEditor {
                                 startPoint = new Point(newX, newY)
                                 startGUIPoint = point1
                             }
+                            endX = bufferX
+                            endY = (endX - point2!.baseBufferElement.center.x) / (point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x) * (point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) + point2!.baseBufferElement.center.y
+
                         }
                         else {
                             if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
@@ -1423,8 +1427,12 @@ export default class SvgEditor {
                                 startPoint = new Point(newX, newY)
                                 startGUIPoint = point1
                             }
+                            endY = bufferY
+                            endX = (endY - point2!.baseBufferElement.center.y) / (point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) * (point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x) + point2!.baseBufferElement.center.x
+
                         }
-                        let endPoint = new Point(bufferX, bufferY)
+
+                        let endPoint = new Point(endX, endY)
                         let endGUIPoint = new GUIOnPoint(endPoint)
                         let markGUILine = new GUIMarkLine(startPoint, endPoint, startGUIPoint, endGUIPoint, guiStraightLine)
                         endGUIPoint.previousGUILine = markGUILine
@@ -1462,6 +1470,7 @@ export default class SvgEditor {
                         let newX = 0, newY = 0
                         let startPoint
                         let startGUIPoint
+                        let endX = 0, endY = 0
                         if (Math.abs(point1!.baseBufferElement.center.y - point2!.baseBufferElement.center.y) < Math.abs(point1!.baseBufferElement.center.x - point2!.baseBufferElement.center.x)) {
                             if (Math.abs(bufferX - point1!.baseBufferElement.center.x) > Math.abs(point2!.baseBufferElement.center.x - bufferX)) {
                                 newX = point2!.baseBufferElement.center.x
@@ -1469,6 +1478,7 @@ export default class SvgEditor {
                                 startPoint = new Point(newX, newY)
                                 startGUIPoint = point2
                                 fatherLine = point2?.previousControlPoint?.correspondingGUIControlLine
+
                             }
                             else {
                                 newX = point1!.baseBufferElement.center.x
@@ -1477,6 +1487,7 @@ export default class SvgEditor {
                                 startGUIPoint = point1
                                 fatherLine = point1?.nextControlPoint?.correspondingGUIControlLine
                             }
+
                         }
                         else {
                             if (Math.abs(bufferY - point1!.baseBufferElement.center.y) > Math.abs(point2!.baseBufferElement.center.y - bufferY)) {
@@ -1494,7 +1505,19 @@ export default class SvgEditor {
                                 fatherLine = point1?.nextControlPoint?.correspondingGUIControlLine
                             }
                         }
-                        let endPoint = new Point(bufferX, bufferY)
+                        let x1 = fatherLine?.onPoint?.baseBufferElement.center.x
+                        let y1 = fatherLine?.onPoint?.baseBufferElement.center.y
+                        let x2 = fatherLine?.offPoint?.baseBufferElement.center.x
+                        let y2 = fatherLine?.offPoint?.baseBufferElement.center.y
+                        if(Math.abs(y1!-y2!)<Math.abs(x1!-x2!)){
+                            endX = bufferX
+                            endY = (endX-x2!)/(x1!-x2!)*(y1!-y2!)+y2!
+                        }
+                        else{
+                            endY = bufferY
+                            endX = (endY-y2!)/(y1!-y2!)*(x1!-x2!)+x2!
+                        }
+                        let endPoint = new Point(endX, endY)
                         let endGUIPoint = new GUIOnPoint(endPoint)
                         let markGUILine = new GUIMarkLine(startPoint, endPoint, startGUIPoint, endGUIPoint, fatherLine)
                         endGUIPoint.previousGUILine = markGUILine
@@ -2502,11 +2525,11 @@ export default class SvgEditor {
     public markComment(svgMarkedId: number, comment: string) {
         let element = this.gui!.guiBaseElements.get(svgMarkedId)
         element!.comment = comment
-        if(element instanceof GUIOnPoint){
-            if(element.nextGUILine){
+        if (element instanceof GUIOnPoint) {
+            if (element.nextGUILine) {
                 element = element.nextGUILine
             }
-            else{
+            else {
                 element = element.previousGUILine!
             }
         }
