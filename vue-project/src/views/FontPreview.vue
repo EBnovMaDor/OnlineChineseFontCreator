@@ -82,7 +82,11 @@
 								<template #default>
 									<div class="font-preview-block">
 										<div v-for="fontcontent in font.content">
-											<div style="background-color:#909399;height:50px;width:50px;"></div><br />
+											<div v-if="font.title==='十二模板字' || font.title==='GB2312-80'" style="height: 60px; margin-bottom: 0px;">
+												<img :src="getImageUrl(font.title,fontcontent)" width="60" height="60" />
+											</div>
+											<div v-else style="background-color: #909399; height: 50px; width: 50px; margin-bottom: 10px;"></div>
+										
 											<div>{{fontcontent}}</div>
 										</div>
 									</div>
@@ -153,11 +157,11 @@
 					},
 					{
 						title: '十二模板字',
-						content: ['今', '过', '意', '我', '永', '然', '警', '转', '酬', '随', '风','鹰'],
+						content: ['今', '国', '意', '我', '永', '然', '警', '转', '酬', '随', '风','鹰'],
 					},
 					{
 						title: 'GB2312-80',
-						content: ['今', '过', '意', '我', '永', '然', '警', '转', '酬', '随', '风', '鹰'],
+						content: ['案', '肮', '哀', '皑','氨', '安', '俺', '按', '暗', '岸', '白', '胺', '身', '盃', '啊', '阿', '埃', '挨', '衣', '心', '唉', '哎', '有', '锦', '缎'],
 					},
 					{
 						title: '拉丁字母',
@@ -287,6 +291,19 @@
 				if (command == 'c') {
 
 				}
+			},
+			getImageUrl: (font: string, name: string) => {
+				var path = ''
+				if (font == '十二模板字') {
+					path = 'pre-font1-' + name + '.png'
+					return new URL(`../image/${path}`, import.meta.url).href
+				}
+
+				else if (font == 'GB2312-80') {
+					path = 'pre-font2-' + name + '.png'
+					return new URL(`../image/${path}`, import.meta.url).href
+				}
+				else { return '' }	
 			},
 		},
 	})

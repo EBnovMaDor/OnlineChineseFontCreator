@@ -66,7 +66,10 @@
 							<el-button v-for="button in buttons" :key="button" text bg class="wrap-botton" @click="setModelText(button)">
 								{{ button }}
 							</el-button>
-							<el-button @click="setRandomText">随机乱文</el-button>
+							<div style="margin-top: 10px;">
+								<el-button type="primary" size="small" @click="setRandomText">随机乱文</el-button>
+								<el-button type="primary" size="small" @click="">常用句</el-button>
+							</div>
 						</div>
 					</div>
 				</div>

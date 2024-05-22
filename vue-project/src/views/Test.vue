@@ -20,7 +20,7 @@
 							<el-dropdown-menu>
 								<el-dropdown-item command="a">转到字库</el-dropdown-item>
 								<el-dropdown-item command="b">转到排版</el-dropdown-item>
-								<el-dropdown-item command="c" divided>修改任务</el-dropdown-item>
+								<el-dropdown-item command="c" divided>历史版本</el-dropdown-item>
 
 							</el-dropdown-menu>
 						</template>
@@ -28,22 +28,26 @@
 				</div>
 				<!--用户-->
 				<div class="right">
-					<el-row :gutter="0" style="margin-right:0; width:200px;">
-						<el-col :span="6" v-for="name in nameList" :key="name"
-							style="display: flex; align-items: center; justify-content: center; min-width:28px;">
-							<el-avatar :style="{ 'background-color': extractColorByName(name) }" :size="28">{{ name
-								}}</el-avatar>
+					<el-row :gutter="0" style="margin-right:0; width:250px;">
+						<el-col :span="5" v-for="user in nameList" :key="user.name" 
+								style="display: flex; align-items: center; justify-content: center; min-width:28px;">
+							<el-badge :value="user.count" :show-zero="false">
+								<el-avatar :style="{ 'background-color': extractColorByName(user.name) }" :size="28">{{ user.name
+									}}</el-avatar>
+							</el-badge>
 						</el-col>
-						<el-col :span="6"
-							style="display: flex; align-items: center; border-left: 1px solid var(--el-border-color); padding-left: 12px; min-width:44px;">
-							<el-avatar :style="{ 'background-color': extractColorByName('Xu') }"
-								:size="32">Xu</el-avatar>
+						<el-col :span="9"
+							style="display: flex; align-items: center; border-left: 1px solid var(--el-border-color); padding-left: 22px; min-width:44px;">
+							<el-badge is-dot class="badge-dot">
+								<el-avatar :style="{ 'background-color': extractColorByName('Xu') }"
+										   :size="32">Xu</el-avatar>
+							</el-badge>
 						</el-col>
 					</el-row>
 				</div>
 			</header>
 			<!--主界面-->
-			<div class="main">
+			<div class="main" >
 				<!--左侧边栏-->
 				<div class="left-sidebar" :class="isLayerout ? 'show' : 'hide'">
 					<!--图层面板-->
@@ -93,9 +97,23 @@
 					<div class="button-container">
 						<!--项目按钮-->
 						<div class="block" style="margin-top: 10vh;">
-							<el-button type="plain">
-								<svg-icon name="xiangmu" />
-							</el-button>
+							<el-popover  placement="right" title="编辑" :width="230" trigger="hover"
+										show-after="1000" content="撤销、重做，插入图片">
+								<template #reference>
+									<el-dropdown style=" float: left;" trigger="click" placement="right">
+										<el-button type="plain">
+											<svg-icon style="width: 25px; height: 25px;" name="xiangmu" />
+										</el-button>
+										<template #dropdown>
+											<el-dropdown-menu>
+												<el-dropdown-item @click.native="">撤销 （Ctrl + Z）</el-dropdown-item>
+												<el-dropdown-item @click.native="">重做（Ctrl + Y）</el-dropdown-item>
+												<el-dropdown-item @click.native="">插入图片（Ctrl + P）</el-dropdown-item>
+											</el-dropdown-menu>
+										</template>
+									</el-dropdown>
+								</template>
+							</el-popover>
 						</div>
 
 						<div class="block">
@@ -138,16 +156,24 @@
 								</el-popover>
 								<!--文本按钮-->
 								<el-popover placement="right" title="文本" :width="230" trigger="hover" show-after="1000"
-									content="生成指定文字。在点击处进行输入，点击输入框外部完成输入，ESC取消">
+											content="生成/删除指定文本。在点击处进行输入，点击输入框外部完成输入，ESC取消。点击进行删除">
 									<template #reference>
-										<el-button type="plain" @click="markText">
-											<svg-icon style=" width: 22px; height: 22px;" name="wenben" />
-										</el-button>
+										<el-dropdown trigger="click" placement="right">
+											<el-button type="plain">
+												<svg-icon style=" width: 22px; height: 22px;" name="wenben" />
+											</el-button>
+											<template #dropdown>
+												<el-dropdown-menu>
+													<el-dropdown-item @click.native="markText">添加文本</el-dropdown-item>
+													<el-dropdown-item @click.native="deleteMark">删除文本</el-dropdown-item>
+												</el-dropdown-menu>
+											</template>
+										</el-dropdown>
 									</template>
 								</el-popover>
 								<!--曲线按钮-->
 								<el-popover placement="right" title="曲线工具" :width="230" trigger="hover"
-									show-after="1000" content="添加与删除任意点与曲线。按住并拖动进行添加，点击进行删除">
+											show-after="1000" content="添加与删除任意点与曲线。按住并拖动进行添加，点击进行删除；点击闭合线段切换是否填充">
 									<template #reference>
 										<el-dropdown trigger="click" placement="right">
 											<el-button type="plain" style="border-radius:0px;">
@@ -160,6 +186,7 @@
 													<el-dropdown-item @click.native="addCurve">添加曲线</el-dropdown-item>
 													<el-dropdown-item @click.native="deleteLine">删除线段</el-dropdown-item>
 													<el-dropdown-item @click.native="deletePoint">删除点</el-dropdown-item>
+													<el-dropdown-item @click.native="changeFill">切换填充</el-dropdown-item>
 												</el-dropdown-menu>
 											</template>
 										</el-dropdown>
@@ -215,14 +242,14 @@
 
 					</div>
 				</div>
-				<img :src="getImageUrl(img)" width="578" height="488" style="position:fixed; top:30px;left:100px;" />
+				<img :src="getImageUrl(img)" width="578" height="488" style="position:fixed; top:130px;left:400px;" />
 				<!--字体编辑画布-->
-				<div id="canvas"></div>
+				<div id="canvas" ></div>
 
 				<!--底部栏-->
 				<div class="footer">
 					<!-- <div class="preview"> -->
-					<div id="preview" style="width: 800px; height: 400px;margin-top:20px;"></div>
+					<div id="preview" ></div>
 					<!-- </div> -->
 
 				</div>
@@ -263,17 +290,16 @@
 					<div v-if="pointPos"><br /> 点的坐标:<br /> x: {{ formatNumber(pointx1) }}, y:{{ formatNumber(pointy1)
 						}}</div>
 					<div v-if="linePos">
-						<br /> 直线的两点坐标:<br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }})
+						<br /> 直线的两点坐标:<br /> <br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }})
 						<br /> (x2:{{ formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }}) <br /><br /> 直线的长度 :
 						{{ formatNumber(length1) }}
 						<br /><br /> 线的角度: {{ angle1 }}度
 					</div>
 					<div v-if="curvePos">
-						<br /> 曲线的两点坐标: <br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }})<br />
+						<br /> 曲线的两点坐标: <br /><br />  (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }})<br />
 						(x2: {{ formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }})<br /><br />
-						控制线长度：{{ formatNumber(length1)
-						}} ;
-						{{ formatNumber(length2) }} <br /> <br />线的角度: {{ angle1 }} 度 ; {{ angle2 }}度
+						控制线长度：{{formatNumber(length1)}} ;{{ formatNumber(length2) }} <br /> <br />
+						切线角度: {{ angle1 }} 度 ; {{ angle2 }}度
 					</div>
 				</div>
 				<div class="rsidebar-bottom">
@@ -289,18 +315,23 @@
 		<div v-show="showInputBox2 || showInputBox" class="upperlayer">
 			<!--文本输入框 esc取消 点击外部提交-->
 			<div class="textinputbar" v-if="showInputBox2"
-				v-bind:style="{ left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px' }">
+			v-bind:style="{ left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px' }">
 				<el-input v-model="inputValue" @blur="submitInput2" @keyup.esc="cancelInput2" style="width: 200px"
-					:autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
+			:autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
 			</div>
 			<!--讨论输入框 esc取消 点击外部提交-->
 			<div class="textinputbar" v-if="showInputBox"
-				v-bind:style="{ left: mousecommentPos.left + 'px', top: mousecommentPos.top + 'px' }">
+				 v-bind:style="{ left: mousecommentPos.left + 'px', top: mousecommentPos.top + 'px' }">
 				<el-input v-model="inputValue" @blur="submitInput" @keyup.esc="cancelInput" style="width: 200px"
-					:autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
+						  :autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
 			</div>
-		</div>
 
+			<!--<div class="textinputbar" v-if="showInputBox2" v-bind:style="{ left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px' }">
+				<el-tag closable type="danger" round size="small">
+					过近
+				</el-tag>
+			</div>-->
+		</div>
 	</div>
 </template>
 
@@ -331,7 +362,7 @@ export default defineComponent({
 
 	data() {
 		return {
-			nameList: ['小明', 'Li', '华'],
+			nameList: [{ name: '小明', count: 0, x: 300, y: 100 }, { name: 'Li', count: 1, x: 600, y: 400 }, { name: '华', count: 0, x: 500, y: 300 }],
 			isLayerout: false,
 
 			showInputBox: false,
@@ -424,10 +455,22 @@ export default defineComponent({
 								{
 									id: 11,
 									label: '组一 （1/30）',
+									children: [
+										{
+											id: 13,
+											label: '稠',
+										},
+										]
 								},
 								{
 									id: 12,
 									label: '组二 （0/30）',
+									children: [
+										{
+											id: 14,
+											label: '乱',
+										},
+									]
 								},
 							],
 						},
@@ -468,7 +511,6 @@ export default defineComponent({
 		ws.addEventListener('close', this.handleWsClose.bind(this), false)
 		ws.addEventListener('error', this.handleWsError.bind(this), false)
 		ws.addEventListener('message', this.handleWsMessage.bind(this), false)
-
 	},
 	methods: {
 		toggleLayer() {
@@ -495,6 +537,9 @@ export default defineComponent({
 		editor() {
 			svgEditor?.setTool('editor')
 		},
+        changeFill() {
+	        svgEditor?.setTool('changeFill')
+        },
 		addStraightLine() {
 			svgEditor?.setTool('addStraightLine')
 		},
@@ -862,4 +907,9 @@ export default defineComponent({
 		background-size: cover;*/
 	/* 图片适应 div 大小 */
 }
+	#preview {
+		width: 800px;
+		height: 400px;
+		margin-top: 20px;
+	}
 </style>

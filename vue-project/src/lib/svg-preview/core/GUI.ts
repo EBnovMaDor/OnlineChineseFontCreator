@@ -71,7 +71,7 @@ export default class GUI implements Observer {
         this._mainLayer.add(this._decoratedGroup)
 
         this._canvas.add(this._mainLayer);
-        if (ifScrollBar) { this._initScrollBar() }
+        if (ifScrollBar) { }
     }
 
     set guiElementIndex(guiElementIndex: number) {

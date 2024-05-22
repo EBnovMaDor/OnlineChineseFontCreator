@@ -130,13 +130,17 @@ button {
     }
 
     .header .right {
-        min-width: 16%;
+       
         display: flex;
         text-align: center;
-        padding-right: 22px;
+        padding-right: 2px;
         font-size: 16px;
     }
 
+        .header .right .badge-dot {
+            margin-top: 0px;
+            margin-right: 40px;
+        }
 /*--主界面--*/
 .main {
     padding: 0;
@@ -256,7 +260,7 @@ button {
 /*--底部栏--*/
 .footer {
     min-height: 15vh;
-    max-height: 30vh;
+    max-height: 50vh;
     height: 15vh;
     min-width: 30vw;
     max-width: 80vw;
@@ -269,10 +273,7 @@ button {
     z-index: 30;
     overflow: auto;
 }
-.preview{
-    height:30vh;
-    padding-top:0.4em;
-}
+
 /*--右侧边栏--*/
 .right-sidebar {
     height: calc(100vh - 72px);
