@@ -75,7 +75,7 @@ function handleMessage(msg) {
           c.send(JSON.stringify(e));
         })
       }
-      console.log("preview:",word)
+      // console.log("preview:",word)
       var jsonObj = {op:"previewEnd",font:font,word:word};
       server.clients.forEach((c) => {
         c.send(JSON.stringify(jsonObj));

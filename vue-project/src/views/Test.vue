@@ -29,25 +29,26 @@
 				<!--用户-->
 				<div class="right">
 					<el-row :gutter="0" style="margin-right:0; width:250px;">
-						<el-col :span="5" v-for="user in nameList" :key="user.name" 
-								style="display: flex; align-items: center; justify-content: center; min-width:28px;">
+						<el-col :span="5" v-for="user in nameList" :key="user.name"
+							style="display: flex; align-items: center; justify-content: center; min-width:28px;">
 							<el-badge :value="user.count" :show-zero="false">
-								<el-avatar :style="{ 'background-color': extractColorByName(user.name) }" :size="28">{{ user.name
-									}}</el-avatar>
+								<el-avatar :style="{ 'background-color': extractColorByName(user.name) }" :size="28">{{
+									user.name
+								}}</el-avatar>
 							</el-badge>
 						</el-col>
 						<el-col :span="9"
 							style="display: flex; align-items: center; border-left: 1px solid var(--el-border-color); padding-left: 22px; min-width:44px;">
 							<el-badge is-dot class="badge-dot">
 								<el-avatar :style="{ 'background-color': extractColorByName('Xu') }"
-										   :size="32">Xu</el-avatar>
+									:size="32">Xu</el-avatar>
 							</el-badge>
 						</el-col>
 					</el-row>
 				</div>
 			</header>
 			<!--主界面-->
-			<div class="main" >
+			<div class="main">
 				<!--左侧边栏-->
 				<div class="left-sidebar" :class="isLayerout ? 'show' : 'hide'">
 					<!--图层面板-->
@@ -97,8 +98,8 @@
 					<div class="button-container">
 						<!--项目按钮-->
 						<div class="block" style="margin-top: 10vh;">
-							<el-popover  placement="right" title="编辑" :width="230" trigger="hover"
-										show-after="1000" content="撤销、重做，插入图片">
+							<el-popover placement="right" title="编辑" :width="230" trigger="hover" show-after="1000"
+								content="撤销、重做，插入图片">
 								<template #reference>
 									<el-dropdown style=" float: left;" trigger="click" placement="right">
 										<el-button type="plain">
@@ -156,7 +157,7 @@
 								</el-popover>
 								<!--文本按钮-->
 								<el-popover placement="right" title="文本" :width="230" trigger="hover" show-after="1000"
-											content="生成/删除指定文本。在点击处进行输入，点击输入框外部完成输入，ESC取消。点击进行删除">
+									content="生成/删除指定文本。在点击处进行输入，点击输入框外部完成输入，ESC取消。点击进行删除">
 									<template #reference>
 										<el-dropdown trigger="click" placement="right">
 											<el-button type="plain">
@@ -173,7 +174,7 @@
 								</el-popover>
 								<!--曲线按钮-->
 								<el-popover placement="right" title="曲线工具" :width="230" trigger="hover"
-											show-after="1000" content="添加与删除任意点与曲线。按住并拖动进行添加，点击进行删除；点击闭合线段切换是否填充">
+									show-after="1000" content="添加与删除任意点与曲线。按住并拖动进行添加，点击进行删除；点击闭合线段切换是否填充">
 									<template #reference>
 										<el-dropdown trigger="click" placement="right">
 											<el-button type="plain" style="border-radius:0px;">
@@ -242,14 +243,15 @@
 
 					</div>
 				</div>
+				<!-- <img :src="getImageUrl(img)" width="578" height="488" style="position:fixed; top:30px;left:100px;" /> -->
 				<img :src="getImageUrl(img)" width="578" height="488" style="position:fixed; top:130px;left:400px;" />
 				<!--字体编辑画布-->
-				<div id="canvas" ></div>
+				<div id="canvas"></div>
 
 				<!--底部栏-->
 				<div class="footer">
 					<!-- <div class="preview"> -->
-					<div id="preview" ></div>
+					<div id="preview"></div>
 					<!-- </div> -->
 
 				</div>
@@ -296,16 +298,17 @@
 						<br /><br /> 线的角度: {{ angle1 }}度
 					</div>
 					<div v-if="curvePos">
-						<br /> 曲线的两点坐标: <br /><br />  (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1) }})<br />
+						<br /> 曲线的两点坐标: <br /><br /> (x1: {{ formatNumber(pointx1) }}, y1:{{ formatNumber(pointy1)
+						}})<br />
 						(x2: {{ formatNumber(pointx2) }}, y2:{{ formatNumber(pointy2) }})<br /><br />
-						控制线长度：{{formatNumber(length1)}} ;{{ formatNumber(length2) }} <br /> <br />
+						控制线长度：{{ formatNumber(length1) }} ;{{ formatNumber(length2) }} <br /> <br />
 						切线角度: {{ angle1 }} 度 ; {{ angle2 }}度
 					</div>
 				</div>
 				<div class="rsidebar-bottom">
 					<div style="margin: 10px 0 10px; text-align: left; font-size: 16px;"><b>按钮</b></div>
 					<el-button type="primary" @click="importSVG"> 导入SVG </el-button>
-					<el-button type="primary" @click="importSVG"> 导出SVG </el-button>
+					<el-button type="primary" @click="exportSVG"> 导出SVG </el-button>
 				</div>
 
 			</aside>
@@ -315,15 +318,15 @@
 		<div v-show="showInputBox2 || showInputBox" class="upperlayer">
 			<!--文本输入框 esc取消 点击外部提交-->
 			<div class="textinputbar" v-if="showInputBox2"
-			v-bind:style="{ left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px' }">
+				v-bind:style="{ left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px' }">
 				<el-input v-model="inputValue" @blur="submitInput2" @keyup.esc="cancelInput2" style="width: 200px"
-			:autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
+					:autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
 			</div>
 			<!--讨论输入框 esc取消 点击外部提交-->
 			<div class="textinputbar" v-if="showInputBox"
-				 v-bind:style="{ left: mousecommentPos.left + 'px', top: mousecommentPos.top + 'px' }">
+				v-bind:style="{ left: mousecommentPos.left + 'px', top: mousecommentPos.top + 'px' }">
 				<el-input v-model="inputValue" @blur="submitInput" @keyup.esc="cancelInput" style="width: 200px"
-						  :autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
+					:autosize="{ minRows: 2, maxRows: 10 }" type="textarea" placeholder="请输入" />
 			</div>
 
 			<!--<div class="textinputbar" v-if="showInputBox2" v-bind:style="{ left: mouseTextPos.x + 'px', top: mouseTextPos.y + 'px' }">
@@ -391,7 +394,7 @@ export default defineComponent({
 			angle2: 0,
 			font: "font_1",
 			word: "今",
-			img: '1.png',
+			img: '6.png',
 			previewString: "今国意我永然警转酬随风鹰",
 			previewcnt: 0,
 			getImageUrl: (name: string) => {
@@ -460,7 +463,7 @@ export default defineComponent({
 											id: 13,
 											label: '稠',
 										},
-										]
+									]
 								},
 								{
 									id: 12,
@@ -499,11 +502,16 @@ export default defineComponent({
 		}
 	},
 	mounted() {
+		if (location.href.indexOf("#reloaded") == -1) {
+			location.href = location.href + "#reloaded"
+			location.reload()
+		}
 		svgEditor = new SvgEditor('canvas')
 		svgPreviewer = new SvgPreviewer('preview')
 		this.getInfo()
 		this.username = localStorage.getItem('username') || '';
 		if (!localStorage.getItem('username')) {
+
 			router.push('/login')
 			return;
 		}
@@ -511,6 +519,7 @@ export default defineComponent({
 		ws.addEventListener('close', this.handleWsClose.bind(this), false)
 		ws.addEventListener('error', this.handleWsError.bind(this), false)
 		ws.addEventListener('message', this.handleWsMessage.bind(this), false)
+
 	},
 	methods: {
 		toggleLayer() {
@@ -531,15 +540,26 @@ export default defineComponent({
 		importSVG() {
 			svgEditor?.importSVG()
 		},
+		exportSVG() {
+			const blob = new Blob([svgEditor!.exportSVG()], { type: 'image/svg+xml;charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = this.font + "_" + this.word + '.svg';
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+		},
 		move() {
 			svgEditor?.setTool('move')
 		},
 		editor() {
 			svgEditor?.setTool('editor')
 		},
-        changeFill() {
-	        svgEditor?.setTool('changeFill')
-        },
+		changeFill() {
+			svgEditor?.setTool('changeFill')
+		},
 		addStraightLine() {
 			svgEditor?.setTool('addStraightLine')
 		},
@@ -907,9 +927,10 @@ export default defineComponent({
 		background-size: cover;*/
 	/* 图片适应 div 大小 */
 }
-	#preview {
-		width: 800px;
-		height: 400px;
-		margin-top: 20px;
-	}
+
+#preview {
+	width: 800px;
+	height: 400px;
+	margin-top: 20px;
+}
 </style>

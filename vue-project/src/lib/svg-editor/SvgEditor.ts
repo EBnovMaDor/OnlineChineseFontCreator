@@ -37,12 +37,12 @@ import FontCreatorEventHandler from './core/FontCreatorEventHandler';
 import BaseBufferClosedPath from './base-buffer-element/BaseBufferClosedPath';
 import GUIClosedPath from './gui-element/gui-base-elements/GUIClosedPath';
 import BaseBufferClosedPolygon from './base-buffer-element/BaseBufferClosedPolygon';
-import { el } from 'element-plus/es/locales.mjs';
+import { el, pa } from 'element-plus/es/locales.mjs';
 import GUIText from './gui-element/gui-base-elements/GUIText';
 import BaseBufferRing from './base-buffer-element/BaseBufferRing';
 import GUIRing from './gui-element/gui-base-elements/GUIRing';
 import { update } from 'lodash';
-
+import { saveAs } from 'file-saver'
 const isFingerOrMouse = (e: PointerEvent) => e.pointerType == 'touch' || e.pointerType == 'mouse'
 const isFinger = (e: PointerEvent) => e.pointerType == 'touch'
 const isPen = (e: PointerEvent) => e.pointerType == 'pen'
@@ -161,6 +161,35 @@ export default class SvgEditor {
         this._svgPath.clear()
         this._msgSend = [['i']]
         this.ifSend = 1
+    }
+
+    public exportSVG():string {
+        let width = 0
+        let height = 0
+        let pathString = ""
+        for (let path of this._svgPath.values()) {
+            // console.log(path[0])
+            let pathArray = path[0].lines
+            pathString += "M " + path[0].startPointX.toString() + " " + path[0].startPointY.toString() + " "
+            if (path[0].startPointX > width) width = path[0].startPointX
+            if (path[0].startPointY > height) height = path[0].startPointY
+            for (let i = 0; i < pathArray.length; i++) {
+                if (pathArray[i][0] == 'C') {
+                    pathString += "C " + pathArray[i][1].toString() + " " + pathArray[i][2].toString() + " " + pathArray[i][3].toString() + " " + pathArray[i][4].toString() + " " + pathArray[i][5].toString() + " " + pathArray[i][6].toString() + " "
+                    if (pathArray[i][1] > width) width = pathArray[i][1]
+                    if (pathArray[i][2] > height) height = pathArray[i][2]
+                    if (pathArray[i][3] > width) width = pathArray[i][3]
+                    if (pathArray[i][4] > height) height = pathArray[i][4]
+                    if (pathArray[i][5] > width) width = pathArray[i][5]
+                    if (pathArray[i][6] > height) height = pathArray[i][6]
+
+                }
+            }
+        }
+        let output = "<svg width=\"" + width.toString() + "\" height=\"" + height.toString() + "\" xmlns=\"http://www.w3.org/2000/svg\">\n" + "   <path d=\"" + pathString + "\" stroke=\"black\" fill=\"black\"/>\n </svg>"
+        console.log(output)
+        //下载txt文件
+        return output
     }
 
     public handleSVG(e: any) {
@@ -1509,13 +1538,13 @@ export default class SvgEditor {
                         let y1 = fatherLine?.onPoint?.baseBufferElement.center.y
                         let x2 = fatherLine?.offPoint?.baseBufferElement.center.x
                         let y2 = fatherLine?.offPoint?.baseBufferElement.center.y
-                        if(Math.abs(y1!-y2!)<Math.abs(x1!-x2!)){
+                        if (Math.abs(y1! - y2!) < Math.abs(x1! - x2!)) {
                             endX = bufferX
-                            endY = (endX-x2!)/(x1!-x2!)*(y1!-y2!)+y2!
+                            endY = (endX - x2!) / (x1! - x2!) * (y1! - y2!) + y2!
                         }
-                        else{
+                        else {
                             endY = bufferY
-                            endX = (endY-y2!)/(y1!-y2!)*(x1!-x2!)+x2!
+                            endX = (endY - y2!) / (y1! - y2!) * (x1! - x2!) + x2!
                         }
                         let endPoint = new Point(endX, endY)
                         let endGUIPoint = new GUIOnPoint(endPoint)
